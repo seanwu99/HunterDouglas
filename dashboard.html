@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <title>RTS Scheduling - dashboard</title>
+
+    <script id="sap-ui-bootstrap"
+            src="https://sapui5.netweaver.ondemand.com/resources/sap-ui-core.js"
+            data-sap-ui-libs="sap.m,sap.ui.commons"
+            data-sap-ui-theme="sap_belize">
+    </script>
+
+
+    <script src="Common/bootstrap/js/bootstrap.min.js"></script>
+    <link href="Common/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="Common/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+
+    <script src="Common/metisMenu/metisMenu.js"></script>
+    <link href="Common/metisMenu/metisMenu.css" rel="stylesheet">
+
+    <script src="Common/highcharts/highstock.js"></script>
+    <script src="Common/highcharts/highcharts-3d.js"></script>
+    <!--<link href="Common/font-awesome/css/font-awesome.css" rel="stylesheet">-->
+    <!--<link href="Common/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">-->
+    <!--<script src="Common/bootstrap/js/bootstrap.min.js"></script>-->
+    <link href="Common/css/tables.css" rel="stylesheet">
+    <script src="Common/js/schedule.js"></script>
+    <script src="Common/rts/OEEM/oeeDashboard.js"></script>
+    <script src="Common/three/three.js"></script>
+
+    <script>
+        var SECs = 0;
+        var ms1000 = new Date();
+        var rtsOEEM = {
+            availability: 85,
+            performance: 85,
+            quality: 85,
+            productCurrent: 0,
+            productTarget: 5555,
+            downtime: false,
+            downtimeCurrent: 0,
+            downtimeTotal: 0,
+            bigLossFilter: 90,
+            sblEquipmentFailure: {
+                title: 'Equipment Failure',
+                occurrences: 0,
+                totalizer: 0,
+                rate: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            sblSetupAndAdjustments: {
+                title: 'Setup and Adjustments',
+                occurrences: 0,
+                totalizer: 0,
+                rate: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            sblIdlingAndMinorStops: {
+                title: 'Idling and Minor Stops',
+                occurrences: 0,
+                totalizer: 0,
+                rate: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            sblReducedSpeed: {
+                title: 'Reduced Speed',
+                occurrences: 0,
+                totalizer: 0,
+                rate: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            sblProcessDefects: {
+                title: 'Process Defects',
+                occurrences: 0,
+                totalizer: 0,
+                rate: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            sblReducedYield: {
+                title: 'Reduced Yield',
+                occurrences: 0,
+                totalizer: 0,
+                rate: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            events: [
+                {reason: '', occurrences: 0, totalizer: 0},
+            ]
+        };
+
+        $(function () {
+            chartOeeTrendInit("Oee Trend", null);             //title & series, random data if null
+            chartSixBigLossesInit("Six Big Losses", null);    //title & series, random data if null
+            chartEventsInit("Downtime Events", null);         //title & series, random data if null
+            chartFloorMapInit('Floor Maps', null);            //title & series, random data if null
+            sblChartsInit();
+            pageRefresh();
+
+        });
+
+        window.requestAnimFrame = (function () {
+            return window.requestAnimationFrame ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                function (callback) {
+                    window.setTimeout(callback, 1000 / 60);
+                };
+        })();
+
+        function pageRefresh() {
+            requestAnimFrame(pageRefresh);
+            refresh();
+        }
+
+        function refresh() {
+            if (new Date() - ms1000 < 1000) {
+                return;
+            } else {
+                SECs++;
+                ms1000 = new Date();
+            }
+//            console.log(SECs);
+
+            panelOEE(85 + Math.round((Math.random() * 14)), 85 + Math.round((Math.random() * 14)), 85 + Math.round((Math.random() * 14)));  //availability%, performance%, quality%
+            panelTarget(Math.round((Math.random() * 10)));  //new parts
+            panelDowntime();
+
+            if (SECs % 15 == 0)
+                simulateTarget();
+
+            if (SECs % 3 == 0)
+                chartOeeTrendRefresh();
+
+            if (SECs % 2 == 0)
+                chartSixBigLossesRefresh(rtsOEEM.bigLossFilter); // %
+
+            if (SECs % 2 == 0)
+                panelSixBigLossesRefresh();
+
+            if (SECs % 3 == 0)
+                chartFloorMapReafresh();    //mock
+
+        }
+
+        //        setInterval(function () {
+        //            TICK++;
+        //            panelOEE(85 + Math.round((Math.random() * 14)), 85 + Math.round((Math.random() * 14)), 85 + Math.round((Math.random() * 14)));  //availability%, performance%, quality%
+        //            simulateTarget();
+        //            panelTarget(Math.round((Math.random() * 10)));  //new parts
+        //            panelDowntime();
+        //            chartOeeTrendRefresh();
+        //            chartSixBigLossesRefresh(rtsOEEM.bigLossFilter); // %
+        //            panelSixBigLossesRefresh();
+        //            chartFloorMapReafresh();    //mock
+        //        }, 3000);
+
+        function chartFloorMapReafresh() {
+
+            var ele = document.getElementsByClassName("highcharts-Pad80x50-box");
+            $.each(ele, function (i, e) {
+                var rdm = Math.random();
+                if (rdm < .85) {
+                    e.setAttribute("fill", '#337ab7');
+                } else if (rdm >= .85 && rdm < .95) {
+                    e.setAttribute("fill", '#ffbc00');
+                } else if (rdm >= .95) {
+                    e.setAttribute("fill", '#d9534f');
+                }
+            });
+
+        }
+
+        function panelSixBigLossesRefresh() {
+            var
+                c1 = Math.round(10 + (Math.random() * 100)),
+                c2 = Math.round(10 + (Math.random() * 100)),
+                c3 = Math.round(10 + (Math.random() * 100)),
+                c4 = Math.round(10 + (Math.random() * 100)),
+                c5 = Math.round(10 + (Math.random() * 100)),
+                c6 = Math.round(10 + (Math.random() * 100)),
+                t1 = Math.round(Math.random() * 5000),
+                t2 = Math.round(Math.random() * 5000),
+                t3 = Math.round(Math.random() * 5000),
+                t4 = Math.round(Math.random() * 5000),
+                t5 = Math.round(Math.random() * 5000),
+                t6 = Math.round(Math.random() * 5000),
+                t = t1 + t2 + t3 + t4 + t5 + t6;
+            sblEquipmentFailure((100 * t1 / t) | 0, c1, t1);       //new rate%, Occurrences, Totalizer(sec)
+            sblSetupAndAdjustments((100 * t2 / t) | 0, c2, t2);    //new rate%, Occurrences, Totalizer(sec)
+            sblIdlingAndMinorStops((100 * t3 / t) | 0, c3, t3);    //new rate%, Occurrences, Totalizer(sec)
+            sblReducedSpeed((100 * t4 / t) | 0, c4, t4);           //new rate%, Occurrences, Totalizer(sec)
+            sblProcessDefects((100 * t5 / t) | 0, c5, t5);         //new rate%, Occurrences, Totalizer(sec)
+            sblReducedYield((100 * t6 / t) | 0, c6, t6);           //new rate%, Occurrences, Totalizer(sec)
+        }
+
+        function chartSixBigLossesRefresh(filter) {
+            var chartSeries = [
+                rtsOEEM.sblEquipmentFailure.rate[rtsOEEM.sblEquipmentFailure.rate.length - 1],
+                rtsOEEM.sblSetupAndAdjustments.rate[rtsOEEM.sblSetupAndAdjustments.rate.length - 1],
+                rtsOEEM.sblIdlingAndMinorStops.rate[rtsOEEM.sblIdlingAndMinorStops.rate.length - 1],
+                rtsOEEM.sblReducedSpeed.rate[rtsOEEM.sblReducedSpeed.rate.length - 1],
+                rtsOEEM.sblProcessDefects.rate[rtsOEEM.sblProcessDefects.rate.length - 1],
+                rtsOEEM.sblReducedYield.rate[rtsOEEM.sblReducedYield.rate.length - 1],
+            ];
+
+            var chartCategories = [
+                rtsOEEM.sblEquipmentFailure.title,
+                rtsOEEM.sblSetupAndAdjustments.title,
+                rtsOEEM.sblIdlingAndMinorStops.title,
+                rtsOEEM.sblReducedSpeed.title,
+                rtsOEEM.sblProcessDefects.title,
+                rtsOEEM.sblReducedYield.title,
+            ];
+
+            for (var i = 0; i < 5; i++) {
+                for (var j = i + 1; j < 6; j++) {
+                    if (chartSeries[i] < chartSeries[j]) {
+                        var t1 = chartSeries[i];
+                        chartSeries[i] = chartSeries[j];
+                        chartSeries[j] = t1;
+                        var t2 = chartCategories[i];
+                        chartCategories[i] = chartCategories[j];
+                        chartCategories[j] = t2;
+                    }
+                }
+            }
+            var chartSeries2 = [];
+            var chartSeries3 = [];
+
+            var g = 0;
+            for (var n = 0; n < chartSeries.length; n++) {
+                g = g + chartSeries[n];
+                chartSeries2.push(chartSeries[n]);
+                chartSeries3.push(g);
+                if (g > filter) {
+                    n = 100;
+                }
+            }
+
+            chartSixBigLosses.series[0].setData(chartSeries2);
+            chartSixBigLosses.series[1].setData(chartSeries3);
+            chartSixBigLosses.series[2].setData([{
+                name: chartCategories[0],
+                y: chartSeries[0]
+            }, {
+                name: chartCategories[1],
+                y: chartSeries[1]
+            }, {
+                name: chartCategories[2],
+                y: chartSeries[2]
+            }, {
+                name: chartCategories[3],
+                y: chartSeries[3]
+            }, {
+                name: chartCategories[4],
+                y: chartSeries[4]
+            }, {
+                name: chartCategories[5],
+                y: chartSeries[5]
+            }]);
+            chartSixBigLosses.xAxis[0].setCategories(chartCategories);
+        }
+
+        function panelOEE(availability, performance, quality) {
+
+            rtsOEEM.availability = availability;
+            rtsOEEM.performance = performance;
+            rtsOEEM.quality = quality;
+        }
+
+        function chartOeeTrendRefresh() {
+            var ts = new Date().getTime();
+            chartOeeTrend.series[1].addPoint([ts, rtsOEEM.availability], false, false);
+            chartOeeTrend.series[2].addPoint([ts, rtsOEEM.performance], false, false);
+            chartOeeTrend.series[3].addPoint([ts, rtsOEEM.quality], false, false);
+            chartOeeTrend.series[0].addPoint([ts, rtsOEEM.availability * rtsOEEM.performance * rtsOEEM.quality / 10000], true, false);
+        }
+
+        function simulateTarget() {
+            rtsOEEM.downtime = !rtsOEEM.downtime;
+            if (rtsOEEM.downtime) {
+                rtsOEEM.downtimeCurrent = new Date().getTime();
+            } else {
+                rtsOEEM.downtimeTotal += (new Date().getTime() - rtsOEEM.downtimeCurrent);
+            }
+        }
+
+        function panelDowntime() {
+//            if (!rtsOEEM.downtime) {
+//                document.getElementById("DowntimeIcon").className = "fa fa-spinner fa-4x fa-fw";
+//                document.getElementById('Downtime').innerHTML = "Downtime: " +
+//                    (new Date(0)).toISOString().substr(11, 8) +
+//                    " / " +
+//                    (new Date(rtsOEEM.downtimeTotal)).toISOString().substr(11, 8);
+//            } else {
+//                document.getElementById("DowntimeIcon").className = "fa fa-spinner fa-pulse fa-4x fa-fw";
+//                document.getElementById('Downtime').innerHTML = "Downtime: " +
+//                    (new Date((new Date().getTime() - rtsOEEM.downtimeCurrent))).toISOString().substr(11, 8) +
+//                    " / " +
+//                    (new Date(rtsOEEM.downtimeTotal)).toISOString().substr(11, 8);
+//            }
+        }
+
+        function panelTarget(parts) {
+            if (!rtsOEEM.downtime) {
+                rtsOEEM.productCurrent += parts;
+//                document.getElementById('TargetIcon').className = "fa fa-cog fa-spin fa-1x";
+//                document.getElementById("TargetColor").className = "panel panel-green";
+            } else {
+//                document.getElementById('TargetIcon').className = "fa fa-cog fa-4x";
+//                document.getElementById("TargetColor").className = "panel panel-red";
+            }
+//            document.getElementById('Target').innerHTML = "<div class=\"huge\">Target: " + rtsOEEM.productCurrent + " / " + rtsOEEM.productTarget + "</div>";
+        }
+
+    </script>
+</head>
+
+
+<body>
+
+<div id="wrapper">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="schedule.html">RTS Scheduling</a>
+        </div>
+        <!-- /.navbar-header -->
+
+        <ul class="nav navbar-top-links navbar-right">
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-envelope fa-fw"></i> <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-messages">
+                    <li>
+                        <a href="#">
+                            <div>
+                                <strong>John Smith</strong>
+                                <span class="pull-right text-muted">
+                                        <em>Yesterday</em>
+                                    </span>
+                            </div>
+                            <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...</div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <strong>John Smith</strong>
+                                <span class="pull-right text-muted">
+                                        <em>Yesterday</em>
+                                    </span>
+                            </div>
+                            <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...</div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <strong>John Smith</strong>
+                                <span class="pull-right text-muted">
+                                        <em>Yesterday</em>
+                                    </span>
+                            </div>
+                            <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...</div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a class="text-center" href="#">
+                            <strong>Read All Messages</strong>
+                            <i class="fa fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+                <!-- /.dropdown-messages -->
+            </li>
+            <!-- /.dropdown -->
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-tasks fa-fw"></i> <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-tasks">
+                    <li>
+                        <a href="#">
+                            <div>
+                                <p>
+                                    <strong>Task 1</strong>
+                                    <span class="pull-right text-muted">40% Complete</span>
+                                </p>
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"
+                                         style="width: 40%">
+                                        <span class="sr-only">40% Complete (success)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <p>
+                                    <strong>Task 2</strong>
+                                    <span class="pull-right text-muted">20% Complete</span>
+                                </p>
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"
+                                         style="width: 20%">
+                                        <span class="sr-only">20% Complete</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <p>
+                                    <strong>Task 3</strong>
+                                    <span class="pull-right text-muted">60% Complete</span>
+                                </p>
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
+                                         style="width: 60%">
+                                        <span class="sr-only">60% Complete (warning)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <p>
+                                    <strong>Task 4</strong>
+                                    <span class="pull-right text-muted">80% Complete</span>
+                                </p>
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"
+                                         style="width: 80%">
+                                        <span class="sr-only">80% Complete (danger)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a class="text-center" href="#">
+                            <strong>See All Tasks</strong>
+                            <i class="fa fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+                <!-- /.dropdown-tasks -->
+            </li>
+            <!-- /.dropdown -->
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-bell fa-fw"></i> <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-alerts">
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-comment fa-fw"></i> New Comment
+                                <span class="pull-right text-muted small">4 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-twitter fa-fw"></i> 3 New Followers
+                                <span class="pull-right text-muted small">12 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-envelope fa-fw"></i> Message Sent
+                                <span class="pull-right text-muted small">4 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-tasks fa-fw"></i> New Task
+                                <span class="pull-right text-muted small">4 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-upload fa-fw"></i> Server Rebooted
+                                <span class="pull-right text-muted small">4 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a class="text-center" href="#">
+                            <strong>See All Alerts</strong>
+                            <i class="fa fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+                <!-- /.dropdown-alerts -->
+            </li>
+            <!-- /.dropdown -->
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-user">
+                    <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
+                    </li>
+                    <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li><a href="login.html"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                    </li>
+                </ul>
+                <!-- /.dropdown-user -->
+            </li>
+            <!-- /.dropdown -->
+        </ul>
+        <!-- /.navbar-top-links -->
+
+        <div class="navbar-default sidebar" role="navigation">
+            <div class="sidebar-nav navbar-collapse">
+                <ul class="nav" id="side-menu">
+                    <li class="sidebar-search">
+                        <div class="input-group custom-search-form">
+                            <input type="text" class="form-control" placeholder="Search...">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="button">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <!-- /input-group -->
+                    </li>
+                    <li>
+                        <a href="schedule.html"><i class="fa  fa-calendar  fa-fw"></i>Schedule</a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-dashboard fa-fw"></i>DashBoard<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="dashboard.html">dashboard I.</a>
+                            </li>
+                            <li>
+                                <a href="dashboard.html">dashboard II.</a>
+                            </li>
+                            <li>
+                                <a href="dashboard.html">dashboard III.</a>
+                            </li>
+                        </ul>
+                        <!-- /.nav-second-level -->
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-table fa-fw"></i>Tables<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="tables.html">Tables I.</a>
+                            </li>
+                            <li>
+                                <a href="tables.html">Tables II.</a>
+                            </li>
+                            <li>
+                                <a href="tables.html">Tables III.</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-edit fa-fw"></i>Reports<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="reports.html">Reports I.</a>
+                            </li>
+                            <li>
+                                <a href="reports.html">Reports II.</a>
+                            </li>
+                            <li>
+                                <a href="reports.html">Reports III.</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                </ul>
+            </div>
+            <!-- /.sidebar-collapse -->
+        </div>
+        <!-- /.navbar-static-side -->
+    </nav>
+
+    <div id="page-wrapper">
+        <br/>
+        <hr/>
+        <div class="panel panel-default" style="border:0; box-shadow: none; ">
+            <!--<div class="panel-heading">-->
+            <!--<a data-toggle="collapse" data-parent="#accordion1" href="#collapse4">-->
+            <!--<i class="fa fa-area-chart"></i>-->
+            <!--All seeing. All knowing.-->
+            <!--</a>-->
+            <!--&lt;!&ndash;<a data-toggle="collapse" data-parent="#accordion" href="#collapse4">&ndash;&gt;-->
+            <!--&lt;!&ndash;<i class="fa fa-area-chart"></i>&ndash;&gt;-->
+            <!--&lt;!&ndash;All seeing. All knowing.&ndash;&gt;-->
+            <!--&lt;!&ndash;</a>&ndash;&gt;-->
+            <!--</div>-->
+
+
+            <div id="collapse4" class="panel-collapse collapse in">
+                <div class="panel-body">
+                    <div id="myCarousel" class="carousel slide" data-ride="carousel">
+                        <!-- Indicators -->
+                        <ol class="carousel-indicators">
+                            <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                            <li data-target="#myCarousel" data-slide-to="1"></li>
+                            <li data-target="#myCarousel" data-slide-to="2"></li>
+                            <li data-target="#myCarousel" data-slide-to="3"></li>
+                            <li data-target="#myCarousel" data-slide-to="4"></li>
+                        </ol>
+
+                        <!-- Wrapper for slides -->
+                        <div class="carousel-inner">
+                            <div class="item active">
+                                <div class="panel-body">
+                                    <div id="chartOeeTrend"></div>
+                                </div>
+                            </div>
+
+                            <div class="item">
+                                <div class="panel-body">
+                                    <div id="chartSixBigLosses"></div>
+                                </div>
+                            </div>
+
+                            <div class="item">
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div id="chartEvents" class="col-md-7"></div>
+                                        <div class="col-md-5">
+                                            <div class="panel-body">
+                                                <div class="table">
+                                                    <table id="eventsTable" class="table table-hover">
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="item">
+                                <div class="panel-body">
+                                    <div id="chartFloorMap"></div>
+                                </div>
+                            </div>
+
+                            <div class="item" style="align-content: center">
+                                <div class="panel-body">
+                                    <div id="chart3D"></div>
+                                </div>
+                                <!--<div id="chart3D" style="align-content: center"></div>-->
+                            </div>
+                        </div>
+                        <a class="left carousel-control" href="#myCarousel" data-slide="prev">
+                            <span class="glyphicon glyphicon-chevron-left"></span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="right carousel-control" href="#myCarousel" data-slide="next">
+                            <span class="glyphicon glyphicon-chevron-right"></span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr/>
+        <!--<div class="panel-group" id="accordion">-->
+        <!--</div>-->
+        <div class="row" style="display: none">
+            <div class="col-md-6">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        Six Big Losses > Availability Loss > EQUIPMENT FAILURE
+                    </div>
+                    <div id="EquipmentFailure" class="panel-body">
+                        <div id="chartEquipmentFailure" class="col-sm-4"></div>
+                        <ul id="rateEquipmentFailure" class="col-sm-8" style="font-size: 16px">
+                            <li></li>
+                            <li></li>
+                        </ul>
+                    </div>
+                    <div class="panel-footer">
+                        Reasons for equipment failure include tooling failure, breakdowns, and unplanned
+                        maintenance. From the broader perspective of unplanned stops, other common reasons include no
+                        operators or
+                        materials, being starved by upstream equipment or being blocked by downstream equipment.
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        Six Big Losses > Availability Loss > SETUP AND ADJUSTMENTS
+                    </div>
+                    <div id="SetupAndAdjustments" class="panel-body">
+                        <div id="chartSetupAndAdjustments" class="col-sm-4"></div>
+                        <ul id="rateSetupAndAdjustments" class="col-sm-8" style="font-size: 16px">
+                            <li></li>
+                            <li></li>
+                        </ul>
+                    </div>
+                    <div class="panel-footer">
+                        Reasons for Setup and Adjustments include setup, changeovers, major adjustments, and
+                        tooling adjustments. From the broader perspective of planned stops, other common reasons include
+                        cleaning,
+                        warmup time, planned maintenance, and quality inspections.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="display: none">
+            <div class="col-md-6">
+                <div class="panel panel-warning">
+                    <div class="panel-heading">
+                        Six Big Losses > Performance Loss > IDLING AND MINOR STOPS
+                    </div>
+                    <div id="IdlingAndMinorStops" class="panel-body" style="list-style-type: square">
+                        <div id="chartIdlingAndMinorStops" class="col-sm-4"></div>
+                        <ul id="rateIdlingAndMinorStops" class="col-sm-8" style="font-size: 16px">
+                            <li></li>
+                            <li></li>
+                        </ul>
+                    </div>
+                    <div class="panel-footer">
+                        Reasons for Idling and Minor Stops include misfeeds, material jams, obstructed product
+                        flow, incorrect settings, misaligned or blocked sensors, equipment design issues, and periodic quick
+                        cleaning.
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="panel panel-warning">
+                    <div class="panel-heading">
+                        Six Big Losses > Performance Loss > REDUCED SPEED
+                    </div>
+                    <div id="ReducedSpeed" class="panel-body">
+                        <div id="chartReducedSpeed" class="col-sm-4"></div>
+                        <ul id="rateReducedSpeed" class="col-sm-8" style="font-size: 16px">
+                            <li></li>
+                            <li></li>
+                        </ul>
+                    </div>
+                    <div class="panel-footer">
+                        Reasons for reduced speed include dirty or worn out equipment, poor lubrication,
+                        substandard materials, poor environmental conditions, operator inexperience, startup, and shutdown.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="display: none">
+            <div class="col-md-6">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        Six Big Losses > Quality Loss > PROCESS DEFECTS
+                    </div>
+                    <div id="ProcessDefects" class="panel-body">
+                        <div id="chartProcessDefects" class="col-sm-4"></div>
+                        <ul id="rateProcessDefects" class="col-sm-8" style="font-size: 16px">
+                            <li></li>
+                            <li></li>
+                        </ul>
+                    </div>
+                    <div class="panel-footer">
+                        Reasons for process defects include incorrect equipment settings, operator or equipment
+                        handling errors, and lot expiration. This includes scrapped parts as well as parts that can be
+                        reworked.
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        Six Big Losses > Quality Loss > REDUCED YIELD
+                    </div>
+                    <div id="ReducedYield" class="panel-body">
+                        <div id="chartReducedYield" class="col-sm-4"></div>
+                        <ul id="rateReducedYield" class="col-sm-8" style="font-size: 16px">
+                            <li></li>
+                            <li></li>
+                        </ul>
+                    </div>
+                    <div class="panel-footer">
+                        Reasons for Reduced Yield include suboptimal changeovers, incorrect settings
+                        when a new part is run, equipment that needs warmup cycles, or equipment that inherently creates
+                        waste after
+                        startup.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- /#page-wrapper -->
+
+</div>
+
+
+<script>
+    var scene, camera, pointLight;//, stats;
+    var renderer, mixer, animationClip;
+
+    var clock = new THREE.Clock();
+    var container = document.getElementById('chart3D');
+    var window_innerWidth = 1080;
+    var window_innerHeight = 400;
+
+    //    stats = new Stats();
+    //    container.appendChild(stats.dom);
+
+    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setClearColor(0xffffff);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window_innerWidth, window_innerHeight);
+    container.appendChild(renderer.domElement);
+
+    scene = new THREE.Scene();
+    scene.add(new THREE.GridHelper(20, 20));
+
+    camera = new THREE.PerspectiveCamera(40, window_innerWidth / window_innerHeight, 0.01, 1000);
+    camera.position.set(-5.00, 3.43, 11.31);
+    camera.lookAt(new THREE.Vector3(-1.22, 2.18, 4.58));
+
+    pointLight = new THREE.PointLight(0xffffff, 1.75);
+    pointLight.position.copy(camera.position);
+    scene.add(pointLight);
+
+
+    new THREE.ObjectLoader().load('Common/rts/pump.json', function (model) {
+
+        scene.add(model);
+
+        mixer = new THREE.AnimationMixer(model);
+        mixer.clipAction(model.animations[0]).play();
+
+        animate();
+
+    });
+
+
+    //    window.onresize = function () {
+    //
+    //        camera.aspect = window.innerWidth / window.innerHeight;
+    //        camera.updateProjectionMatrix();
+    //
+    //        renderer.setSize(window.innerWidth, window.innerHeight);
+    //
+    //    };
+
+    function animate() {
+        requestAnimationFrame(animate);
+        mixer.update(clock.getDelta());
+        renderer.render(scene, camera);
+    }
+</script>
+</body>
+</html>

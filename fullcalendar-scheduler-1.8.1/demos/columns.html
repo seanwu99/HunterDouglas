@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'/>
+    <link href='../lib/fullcalendar.css' rel='stylesheet'/>
+    <link href='../lib/fullcalendar.print.css' rel='stylesheet' media='print'/>
+    <link href='../scheduler.css' rel='stylesheet'/>
+    <script src='../lib/moment.min.js'></script>
+    <script src='../lib/jquery.min.js'></script>
+    <script src='../lib/fullcalendar.js'></script>
+    <script src='../scheduler.js'></script>
+    <script>
+
+        $(function () { // document ready
+
+            $('#calendar').fullCalendar({
+                now: '2017-10-07',
+                editable: true,
+                aspectRatio: 1.8,
+                scrollTime: '00:00',
+                header: {
+                    left: 'today prev,next',
+                    center: 'title',
+                    right: 'timelineDay,timelineThreeDays,agendaWeek,month'
+                },
+                defaultView: 'timelineDay',
+                views: {
+                    timelineThreeDays: {
+                        type: 'timeline',
+                        duration: {days: 3}
+                    }
+                },
+                resourceAreaWidth: '30%',
+                resourceColumns: [
+                    {
+                        labelText: 'Room',
+                        field: 'title'
+                    },
+                    {
+                        labelText: 'C1',
+                        field: 'col1'
+                    },
+                    {
+                        labelText: 'C2',
+                        field: 'col2'
+                    }
+                ],
+                resources: [
+                    {id: 'a', title: 'Auditorium A', col1: 40, col2: 100},
+                    {id: 'b', title: 'Auditorium B', col1: 40, eventColor: 'green'},
+                    {id: 'c', title: 'Auditorium C', col1: 40, eventColor: 'orange'},
+                    {
+                        id: 'd', title: 'Auditorium D', col1: 40, children: [
+                        {id: 'd1', title: 'Room D1', col1: 10},
+                        {id: 'd2', title: 'Room D2', col1: 10}
+                    ]
+                    },
+                    {id: 'e', title: 'Auditorium E', col1: 40},
+                    {id: 'f', title: 'Auditorium F', col1: 40, eventColor: 'red'},
+                    {id: 'g', title: 'Auditorium G', col1: 40},
+                    {id: 'h', title: 'Auditorium H', col1: 40},
+                    {id: 'i', title: 'Auditorium I', col1: 40},
+                    {id: 'j', title: 'Auditorium J', col1: 40},
+                    {id: 'k', title: 'Auditorium K', col1: 40},
+                    {id: 'l', title: 'Auditorium L', col1: 40},
+                    {id: 'm', title: 'Auditorium M', col1: 40},
+                    {id: 'n', title: 'Auditorium N', col1: 40},
+                    {id: 'o', title: 'Auditorium O', col1: 40},
+                    {id: 'p', title: 'Auditorium P', col1: 40},
+                    {id: 'q', title: 'Auditorium Q', col1: 40},
+                    {id: 'r', title: 'Auditorium R', col1: 40},
+                    {id: 's', title: 'Auditorium S', col1: 40},
+                    {id: 't', title: 'Auditorium T', col1: 40},
+                    {id: 'u', title: 'Auditorium U', col1: 40},
+                    {id: 'v', title: 'Auditorium V', col1: 40},
+                    {id: 'w', title: 'Auditorium W', col1: 40},
+                    {id: 'x', title: 'Auditorium X', col1: 40},
+                    {id: 'y', title: 'Auditorium Y', col1: 40},
+                    {id: 'z', title: 'Auditorium Z', col1: 40}
+                ],
+                events: [
+                    {
+                        id: '1',
+                        resourceId: 'b',
+                        start: '2017-10-07T02:00:00',
+                        end: '2017-10-07T07:00:00',
+                        title: 'event 1'
+                    },
+                    {
+                        id: '2',
+                        resourceId: 'c',
+                        start: '2017-10-07T05:00:00',
+                        end: '2017-10-07T22:00:00',
+                        title: 'event 2'
+                    },
+                    {id: '3', resourceId: 'd', start: '2017-10-06', end: '2017-10-08', title: 'event 3'},
+                    {
+                        id: '4',
+                        resourceId: 'e',
+                        start: '2017-10-07T03:00:00',
+                        end: '2017-10-07T08:00:00',
+                        title: 'event 4'
+                    },
+                    {
+                        id: '5',
+                        resourceId: 'f',
+                        start: '2017-10-07T00:30:00',
+                        end: '2017-10-07T02:30:00',
+                        title: 'event 5'
+                    }
+                ],
+                schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives'
+            });
+
+        });
+
+    </script>
+    <style>
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Lucida Grande", Helvetica, Arial, Verdana, sans-serif;
+            font-size: 14px;
+        }
+
+        #calendar {
+            max-width: 900px;
+            margin: 50px auto;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id='calendar'></div>
+
+</body>
+</html>

@@ -1,0 +1,405 @@
+<!doctype html>
+<html>
+<head>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt-1.10.16/jqc-1.12.4,dt-1.10.16,b-1.4.2,se-1.2.3/datatables.min.css"/>
+    <link rel="stylesheet" type="text/css" href="Editor-1.6.5/css/editor.dataTables.css">
+
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt-1.10.16/jqc-1.12.4,dt-1.10.16,b-1.4.2,se-1.2.3/datatables.min.js"></script>
+    <script type="text/javascript" src="Editor-1.6.5/js/dataTables.editor.js"></script>
+
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    <title>Always visible editing panel</title>
+
+    <link rel="shortcut icon" type="image/png" href="media/images/favicon.png">
+    <link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="http://www.datatables.net/rss.xml">
+
+    <link rel="stylesheet" type="text/css" href="media/css/site.css?_=758e23b3f1a4c34d6c055f5cc10bae7e">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.2.2/css/select.dataTables.min.css">
+    <link rel="stylesheet" type="text/css"
+          href="extensions/Editor/css/editor.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="media/blog/2017-06-30/onPage.css">
+    <style type="text/css">
+
+    </style>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"></script>
+
+    <script type="text/javascript" src="media/js/site.js?_=d78b222e2531b63c1f8683e47301add9"></script>
+    <script type="text/javascript" src="/media/js/dynamic.php?comments-page=blog%2F2017-06-30" async></script>
+    <script type="text/javascript" language="javascript"
+            src="https://cdn.datatables.net/select/1.2.2/js/dataTables.select.min.js"></script>
+    <script type="text/javascript" language="javascript"
+            src="extensions/Editor/js/dataTables.editor.min.js"></script>
+    <script type="text/javascript" language="javascript" src="media/blog/2017-06-30/onPage.js"></script>
+    <script type="text/javascript">
+
+    </script>
+</head>
+<body class="comments">
+
+<a name="top"></a>
+<div id="logo">
+    <img src="media/images/logo-fade.png" class="logo"/>
+</div>
+
+<div class="fw-container">
+    <div class="fw-header">
+        <img src="media/images/logo-fade.png" class="logo"/>
+        <div class="nav-master">
+            <ul>
+                <li class="active"><a href="/">
+                    <img src="media/images/nav-dt.png" alt="DataTables logo"/>
+                    DataTables
+                </a></li>
+                <li><a href="//editor.datatables.net">
+                    <img src="media/images/nav-e.png" alt="Editor logo"/>
+                    Editor
+                </a></li>
+            </ul>
+
+            <div class="account"></div>
+        </div>
+
+        <div id="search">
+            <form action="/q/" method="GET">
+                <input type="text" name="q" placeholder="Search . . ." autocomplete="off">
+                <button>Search</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="fw-nav">
+        <div class="nav-main">
+            <ul>
+                <li class=" sub"><a href="/examples/index">Examples</a></li>
+                <li class=" sub"><a href="/manual/index">Manual</a></li>
+                <li class=" sub"><a href="/reference/index">Reference</a></li>
+                <li class=" sub"><a href="/extensions/index">Extensions</a></li>
+                <li class=" sub"><a href="/plug-ins/index">Plug-ins</a></li>
+                <li class="active"><a href="/blog/index">Blog</a></li>
+                <li class=""><a href="/forums/index">Forums</a></li>
+                <li class=""><a href="/support/index">Support</a></li>
+                <li class=""><a href="/faqs/index">FAQs</a></li>
+                <li class=""><a href="/download/index">Download</a></li>
+                <li class=""><a href="/purchase/index">Purchase</a></li>
+            </ul>
+        </div>
+
+        <div class="mobile-show">
+            <a><i>Show site navigation</i></a>
+        </div>
+    </div>
+
+    <div class="fw-body">
+        <div class="content">
+            <div class="date">Friday 30th June, 2017</div>
+            <h1 class="page_title">Always visible editing panel</h1>
+
+            <p>When you are working with a software library, you want it to fit into your site and design - not have it
+                force you to its way of thinking. This philosophy is deeply engrained into both DataTables and Editor,
+                as shown by their ability to be styled by various popular CSS frameworks. Editor in particular is
+                designed from the ground up to be flexible and fit into your applications.</p>
+
+            <p>The default mode of editing a form in Editor is with a modal window (also sometime referred to as a
+                lightbox). This can be a useful interface paradigm for the end user as it provides separation between
+                the data access and data writing - it quite literally looks like different layers. The downside is that
+                because the form overlays the rest of the page you can loose the context of the data you are editing.
+                This isn't always an issue, but in complex applications it can be useful for the user to refer to other
+                data points when editing a row.</p>
+
+            <p>To that end, one common question for Editor is, if it has the ability to show its form in a dedicated
+                area on the page, not in a modal, but rather alongside other content. Absolutely, this is possible! An
+                example is shown below. In this post I'll describe how this example was put together.</p>
+
+            <h2 data-anchor="Example"><a name="Example"></a>Example</h2>
+
+            <div id="container">
+                <div id="table-container">
+                    <table id="onPageExample" class="display" width="100%">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Salary</th>
+                        </tr>
+                        </thead>
+                        <tfoot>
+                        <tr>
+                            <th>Name</th>
+                            <th>Salary</th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                <div id="form-container">
+                    <p class="start-editing">Select a row<br>to edit or delete</p>
+                    <p class="add-new"><a href="">Or add a new row</a></p>
+                </div>
+            </div>
+
+            <p>This example shows a DataTable with just two columns and an input area to the right of it. The table is
+                shown with only two columns due to the horizontal width constraints of this blog post, but in a real
+                application a table of any size could be used. The space is equally split between the table and the form
+                area.</p>
+
+            <p>Clicking on a row you will be able to see that the data for the row is instantly shown in the form in an
+                editable state. There are buttons to save any changes and also to delete the row. When the row is
+                deselected the original content for the form area is shown again, along with a link to enter data for a
+                new row which will show the <em>create</em> form in that location.</p>
+
+            <p>To see the full Javascript and CSS used for these examples (note they include some small customisations
+                to be suitable for this display) see:</p>
+
+            <ul class="markdown">
+                <li><a href="media/blog/2017-06-30/onPage.js">Javascript</a></li>
+                <li><a href="media/blog/2017-06-30/onPage.css">CSS</a></li>
+            </ul>
+
+            <h2 data-anchor="Display-controllers"><a name="Display-controllers"></a>Display controllers</h2>
+
+            <p>Although Editor's default display is to show the form in a model, it is actually very easy to tell it to
+                display the form somewhere else. The code that controls where the form is shown is <a
+                        href="https://editor.datatables.net/manual/development/display-controllers">termed a <em>display
+                    controller</em> in Editor</a>. It has three functions to perform:</p>
+
+            <ul class="markdown">
+                <li>Initialisation - An Editor instance is being created, and tells the display controller that it will
+                    be used for that Editor.
+                </li>
+                <li>Display the form - When Editor wants to display the form, it will tell the display controller and
+                    pass it in an element that contains the form.
+                </li>
+                <li>Hide the form - Once the editing is complete or the form otherwise dismissed, Editor will ask the
+                    display controller to dismiss the form.
+                </li>
+            </ul>
+
+            <p>With these three simple actions, you can display an Editor form anywhere you wish; another element as
+                shown here, <a href="https://editor.datatables.net/examples/styling/bootstrap.html">a Bootstrap
+                    modal</a>, <a href="https://editor.datatables.net/examples/plug-ins/displayController.html">a child
+                    row</a> or even a new window if you so wished.</p>
+
+            <h3 data-anchor="Initialisation"><a name="Initialisation"></a>Initialisation</h3>
+
+            <p>The initialisation of this plug-in is possibly the most interesting part of this code. We need to
+                consider the case where there are multiple Editor's on the page and each will be displaying its own form
+                in a different container element. Thus, rather than simply having a static display controller name as <a
+                        href="https://editor.datatables.net/manual/development/display-controllers">described in the
+                    manual</a>, we will have a function that we can pass in the element where we want the form to
+                display and it will generate a random name which can be used for Editor's <a
+                        href="//editor.datatables.net/reference/option/displayController"><code class="option"
+                                                                                                title="Editor initialisation option">displayController</code></a>
+                property. This makes use of <a href="https://developer.mozilla.org/en/docs/Web/JavaScript/Closures">Javascripts
+                    ability to use closures</a> - i.e. retaining a value from the enclosing function.</p>
+
+            <pre><code class="multiline language-js">function onPageDisplay ( elm ) {
+    var name = 'onPage'+Math.random();
+    var Editor = $.fn.dataTable.Editor;
+    var emptyInfo;
+
+    Editor.display[name] = $.extend( true, {}, Editor.models.display, {
+        init: function ( editor ) {
+            emptyInfo = elm.html();
+            return Editor.display[name];
+        }
+    } );
+
+    return name;
+}
+</code></pre>
+
+            <p>Note that the function will create a display controller plug-in in the standard fashion (attaching it to
+                <code>$.fn.dataTable.Editor.display</code>) with the standard properties required for the plug-in. Above
+                the <code>init</code> function is shown - <code>open</code> and <code>close</code> are below.</p>
+
+            <p>The only initialisation required here is to make sure that we have a copy of the HTML that already exists
+                in the form display area. This is so it can be reinstated when a row is deselected.</p>
+
+            <h3 data-anchor="Displaying-the-form"><a name="Displaying-the-form"></a>Displaying the form</h3>
+
+            <p>Displaying the form is trivial in the <code>open</code> function. We simply remove anything present (note
+                the use of <a href="https://api.jquery.com/detach/"><code>$().detach()</code></a> which will preserve
+                event handlers assigned to elements in the container) and attach the form Editor has built. If there is
+                a callback function, it should be called when the form is ready (this is useful for animations, etc):
+            </p>
+
+            <pre><code class="multiline language-js">// Show the form
+open: function ( editor, form, callback ) {
+    elm.children().detach();
+    elm.append( form );
+
+    if ( callback ) {
+        callback();
+    }
+},
+</code></pre>
+
+            <h3 data-anchor="Hiding-the-form"><a name="Hiding-the-form"></a>Hiding the form</h3>
+
+            <p>To hide the form (i.e. in this example when a row is deselected) its as trivial as the <code>open</code>
+                case - just remove the contents and then insert the original content. Again, if there is a callback,
+                trigger it.</p>
+
+            <pre><code class="multiline language-js">// Hide the form
+close: function ( editor, callback ) {
+    elm.children().detach();
+    elm.html( emptyInfo );
+
+    if ( callback ) {
+        callback();
+    }
+}
+</code></pre>
+
+            <h3 data-anchor="Complete-plug-in-code"><a name="Complete-plug-in-code"></a>Complete plug-in code</h3>
+
+            <p>Although the above shows all the code required for this display controller plug-in, it does need <em>assembly</em>.
+                To see the completed plug-in with usable code, please <a
+                        href="https://editor.datatables.net/plug-ins/display-controller/editor.onPage">refer to this
+                    page</a>.</p>
+
+            <h2 data-anchor="Event-handling"><a name="Event-handling"></a>Event handling</h2>
+
+            <p>We could now use the standard editing buttons that are shown in the <a
+                    href="//editor.datatables.net/examples">majority of the Editor examples</a> - i.e. <em>Add</em>,
+                <em>Edit</em> and <em>Delete</em> shown above the table and call it done. It would work, but it wouldn't
+                really fit with the idea of having the form instantly accessible.</p>
+
+            <p>Instead, what we'll do is have the form display when a row in the table is selected.</p>
+
+            <h3 data-anchor="Triggering-an-edit"><a name="Triggering-an-edit"></a>Triggering an edit</h3>
+
+            <p>When a row is selected in the DataTable (via the <a href="/extensions/select">Select extension</a>) the
+                <a href="//datatables.net/reference/event/select"><code class="event"
+                                                                        title="DataTables event">select</code></a> event
+                is triggered - at this point we want to call <a
+                        href="//editor.datatables.net/reference/api/edit()"><code class="api" title="Editor API method">edit()</code></a>
+                on the selected row. Likewise, when a row is deselected, we would want to call <a
+                        href="//editor.datatables.net/reference/api/close()"><code class="api"
+                                                                                   title="Editor API method">close()</code></a>:
+            </p>
+
+            <pre><code class="multiline language-js">table
+    .on( 'select', function ( e, dt, type, indexes ) {
+        editor.edit( indexes, {
+            title: 'Edit row'
+        } );
+    } )
+    .on( 'deselect', function () {
+        editor.close();
+    } );
+</code></pre>
+
+            <h3 data-anchor="Deleting-a-row"><a name="Deleting-a-row"></a>Deleting a row</h3>
+
+            <p>When a row is selected, for this example we want to have the form show not only the row in an editing
+                state with a <em>save</em> button, but also a delete button so the row can be removed from the table. We
+                can do that through the <code>buttons</code> parameter of the <a
+                        href="//editor.datatables.net/reference/type/form-options"><code class="type"
+                                                                                         title="Editor parameter type">form-options</code></a>
+                object passed to <a href="//editor.datatables.net/reference/api/edit()"><code class="api"
+                                                                                              title="Editor API method">edit()</code></a>
+                (e.g. the object where the <code>title</code> parameter is used above). This in turn makes use of the <a
+                        href="//editor.datatables.net/reference/api/buttons()"><code class="api"
+                                                                                     title="Editor API method">buttons()</code></a>
+                method.</p>
+
+            <p>Its almost easier to understand this from the code than the text - take a look at the code below which
+                defines two buttons - the first is just text so it does the standard Editor action of saving the form
+                (e.g. <a href="//editor.datatables.net/reference/api/submit()"><code class="api"
+                                                                                     title="Editor API method">submit()</code></a>).
+                The second button has a function (<code>fn</code>) which will be called when the button is activated. In
+                this case it called <a href="//editor.datatables.net/reference/api/remove()"><code class="api"
+                                                                                                   title="Editor API method">remove()</code></a>
+                to set-up the delete action and then submits it immediately:</p>
+
+            <pre><code class="multiline language-js">buttons: [
+    'Save changes',
+    {
+        label: 'Delete',
+        fn: function () {
+            editor
+                .remove( indexes, false )
+                .submit();
+        }
+    }
+]
+</code></pre>
+
+            <h3 data-anchor="Creating-a-new-row"><a name="Creating-a-new-row"></a>Creating a new row</h3>
+
+            <p>The only thing left is to do is provide a way to create a new row. For this we just use a standard jQuery
+                click event listener on the text we put into the page for the new row, and call the <a
+                        href="//editor.datatables.net/reference/api/create()"><code class="api"
+                                                                                    title="Editor API method">create()</code></a>
+                method.</p>
+
+            <p>In the code below again the <code>buttons</code> parameter is used, in this case to add a cancel button
+                in addition to the save button.</p>
+
+            <pre><code class="multiline language-js">$('#form-container').on( 'click', 'p.add-new', function (e) {
+    e.preventDefault();
+
+    editor.create( {
+            title: 'Create new row',
+            buttons: [
+                'Save',
+                {
+                    label: 'Cancel',
+                    fn: function () {
+                        editor.close();
+                    }
+                }
+            ]
+    } );
+} );
+</code></pre>
+
+            <h2 data-anchor="Customise-away!"><a name="Customise-away!"></a>Customise away!</h2>
+
+            <p>Both Editor and DataTables are designed to be easy to get up and running with as quickly as possible.
+                After all, the whole point of library software is to save you development time so you can get on with
+                other things! But you don't need to just use the default options - they should, and can, fit into your
+                application as you need them to.</p>
+
+            <p>With the use of the API and some basic Javascript, you can customise these libraries to suit your
+                needs.</p>
+
+        </div>
+    </div>
+
+    <div class="fw-page-nav">
+        <div class="page-nav">
+            <div class="page-nav-title">Page navigation</div>
+        </div>
+    </div>
+
+    <div class="fw-footer">
+        <div class="copyright">
+            DataTables designed and created by <a href="//sprymedia.co.uk">SpryMedia Ltd</a> &copy; 2007-2017. <a
+                href="/license/mit">MIT licensed</a>. Our <a href="/supporters">Supporters</a><br>
+            SpryMedia Ltd is registered in Scotland, company no. SC456502.
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-365466-5']);
+    _gaq.push(['_trackPageview']);
+
+    (function () {
+        var ga = document.createElement('script');
+        ga.type = 'text/javascript';
+        ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0];
+        s.parentNode.insertBefore(ga, s);
+    })();
+</script>
+
+
+
+</body>
+</html>

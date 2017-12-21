@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>-->
+    <title>RTS Scheduling - reports</title>
+
+    <script id="sap-ui-bootstrap"
+            src="https://sapui5.netweaver.ondemand.com/resources/sap-ui-core.js"
+            data-sap-ui-libs="sap.m,sap.ui.commons"
+            data-sap-ui-theme="sap_belize">
+    </script>
+
+
+    <script src="Common/bootstrap/js/bootstrap.min.js"></script>
+    <link href="Common/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="Common/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+
+    <script src="Common/metisMenu/metisMenu.js"></script>
+    <link href="Common/metisMenu/metisMenu.css" rel="stylesheet">
+
+    <link href="Common/css/reports.css" rel="stylesheet">
+    <script src="Common/js/schedule.js"></script>
+
+
+    <link href="Common/stimulsoft/css/demo.css" rel="stylesheet">
+    <link href="Common/stimulsoft/css/stimulsoft.designer.office2013.whiteteal.css" rel="stylesheet">
+    <link href="Common/stimulsoft/css/stimulsoft.viewer.office2013.whiteteal.css" rel="stylesheet">
+    <script src="Common/stimulsoft/stimulsoft.reports.js"></script>
+    <script src="Common/stimulsoft/stimulsoft.viewer.js"></script>
+    <script src="Common/stimulsoft/Reports/demo.js"></script>
+    <script src="Common/stimulsoft/stimulsoft.designer.js"></script>
+
+
+    <script>
+        var viewer = null;
+        var designer = null;
+        var dataSet = null;
+
+        $(document).ready(function () {
+
+            var js = {};
+            window.addEventListener("resize", function (event) {
+                centerWheel(false);
+            });
+            centerWheel(true);
+//            zip.installJS("lib.zip?v=20170626", ["stimulsoft.reports.js", "stimulsoft.viewer.js", "demo.js"], function () {
+            hideWhell();
+            showViewer();
+//            });
+        });
+
+        function createViewer() {
+            // Specify necessary options for the viewer
+            var options = new Stimulsoft.Viewer.StiViewerOptions();
+            options.height = "100%";
+            options.appearance.fullScreenMode = false;
+            options.appearance.scrollbarsMode = true;
+            options.toolbar.showDesignButton = true;
+            options.appearance.interfaceType = Stimulsoft.Viewer.StiInterfaceType.Mouse;
+            options.appearance.htmlRenderMode = Stimulsoft.Report.Export.StiHtmlExportMode.Table;
+
+            // Create an instance of the viewer
+            viewer = new Stimulsoft.Viewer.StiViewer(options, "StiViewer", false);
+
+            // Add the design button event
+            viewer.onDesignReport = function (e) {
+                this.visible = false;
+                if (designer == null) {
+                    createDesigner(e);
+                } else {
+                    designer.visible = true;
+                    designer.report = e.report;
+//                    ga('set', {
+//                        page: '/designer_' + designer.report.reportName,
+//                        title: 'Designer ' + designer.report.reportName
+//                    });
+//                    ga('send', 'pageview');
+                }
+            };
+
+            viewer.renderHtml("viewerContent");
+//            log('viewer');
+        }
+
+        function log(obj) {
+            console.log(obj);
+        }
+
+        function createDesigner(e) {
+            centerWheel(true);
+//            zip.installJS("designer.zip?v=20170626", ["stimulsoft.designer.js"], function () {
+            hideWhell();
+            var options = new Stimulsoft.Designer.StiDesignerOptions();
+            options.height = "90vh";
+            options.appearance.fullScreenMode = false;
+            options.appearance.interfaceType = Stimulsoft.Designer.StiInterfaceType.Mouse;
+            options.appearance.htmlRenderMode = Stimulsoft.Report.Export.StiHtmlExportMode.Table;
+
+            // Create an instance of the designer
+            designer = new Stimulsoft.Designer.StiDesigner(options, "StiDesigner", false);
+
+            // Add the exit menu item event
+            designer.onExit = function (e) {
+                this.visible = false;
+                viewer.visible = true;
+
+//                    ga('set', {
+//                        page: '/viewer_' + viewer.getReportFileName(),
+//                        title: 'Viewer ' + viewer.getReportFileName()
+//                    });
+//                    ga('send', 'pageview');
+
+            }
+            designer.renderHtml("designerContent");
+            designer.visible = true;
+            designer.report = e.report;
+
+        }
+
+        function setReport(reportObject) {
+            // Forcibly show process indicator
+            viewer.showProcessIndicator();
+
+            // Timeout need for immediate display loading report indicator
+            setTimeout(function () {
+                // Create a new report instance
+                var report = new Stimulsoft.Report.StiReport();
+                // Load reports from JSON object
+                report.loadFile("Common/stimulsoft/Reports/" + reportObject.id + ".mrt");
+                // Remove all connections from the report template
+                report.dictionary.databases.clear();
+                // Register DataSet object
+                report.regData("Demo", "Demo", dataSet);
+
+                // Assign the report to the viewer
+                viewer.report = report;
+
+            }, 50);
+        }
+
+        // Set report button style
+        function setReportButton(button) {
+            for (var reportName in reportsCollection) {
+                var reportButton = document.getElementById(reportName);
+                reportButton.isSelected = reportButton == button;
+                reportButton.className = reportButton.isSelected ? "ReportButton Selected" : "ReportButton";
+            }
+        }
+
+
+        // Load first report after the page is loaded
+        function showViewer() {
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/ar.xml", false, "Arabic");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/be.xml", false, "Belarusian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/bg.xml", false, "Bulgarian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/ca-ES.xml", false, "Catalan");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/cs.xml", false, "Czech");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/de.xml", false, "Deutsch");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/el-GR.xml", false, "Greek");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/es.xml", false, "Spanish");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/eu-ES.xml", false, "Basque");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/fa.xml", false, "Farsi");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/fr.xml", false, "French");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/gl-ES.xml", false, "Galician");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/hr.xml", false, "Croatian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/hu.xml", false, "Hungarian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/id.xml", false, "Indonesian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/it.xml", false, "Italian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/ka.xml", false, "Georgian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/Lt-sr-SP.xml", false, "Serbian (Latin)");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/lt.xml", false, "Lithuanian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/nb-NO.xml", false, "Norwegian (Bokmål)");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/nl.xml", false, "Dutch");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/pl.xml", false, "Polish");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/pt-BR.xml", false, "Portuguese (Brazil)");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/ro.xml", false, "Romanian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/ru.xml", false, "Russian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/sk.xml", false, "Slovak");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/sv.xml", false, "Swedish");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/tr.xml", false, "Turkish");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/uk.xml", false, "Ukrainian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/zh-CHS.xml", false, "Chinese (Simplified)");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Common/stimulsoft/Localizations/zh-CHT.xml", false, "Chinese (Traditional)");
+
+            // Create new DataSet object
+            dataSet = new Stimulsoft.System.Data.DataSet("Demo");
+            // Load JSON data file from specified URL to the DataSet object
+            dataSet.readJson(demoData);
+
+            createViewer();
+            selectedButton = document.getElementById("OnlineStoreSales");
+            onButtonClick(selectedButton, OnlineStoreSales);
+        }
+
+        function onButtonClick(button, reportObject) {
+            selectedButton.className = "ReportButton";
+            button.className = "ReportButton Selected";
+            selectedButton = button;
+            setReport(reportObject);
+        }
+
+        function onButtonMouseOver(button) {
+            if (button != selectedButton) button.className = "ReportButton Over";
+        }
+
+        function onButtonMouseOut(button) {
+            if (button != selectedButton) button.className = "ReportButton";
+        }
+
+        function centerWheel(show) {
+            //document.getElementById("load_wheel").style.left = (document.getElementById("stLeftPanel").offsetWidth +
+            //			(window.innerWidth - document.getElementById("stLeftPanel").offsetWidth) / 2 - 36) + "px";
+            document.getElementById("load_wheel").style.left = (window.innerWidth / 2 - 36) + "px";
+            if (show) showWhell();
+        }
+
+        function showWhell() {
+            document.getElementById("load_wheel").style.display = "";
+        }
+
+        function hideWhell() {
+            document.getElementById("load_wheel").style.display = "none";
+        }
+    </script>
+</head>
+
+<body style="overflow-y: hidden">
+<div id="wrapper">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="schedule.html">RTS Scheduling</a>
+        </div>
+        <!-- /.navbar-header -->
+
+        <ul class="nav navbar-top-links navbar-right">
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-envelope fa-fw"></i> <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-messages">
+                    <li>
+                        <a href="#">
+                            <div>
+                                <strong>John Smith</strong>
+                                <span class="pull-right text-muted">
+                                        <em>Yesterday</em>
+                                    </span>
+                            </div>
+                            <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...</div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <strong>John Smith</strong>
+                                <span class="pull-right text-muted">
+                                        <em>Yesterday</em>
+                                    </span>
+                            </div>
+                            <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...</div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <strong>John Smith</strong>
+                                <span class="pull-right text-muted">
+                                        <em>Yesterday</em>
+                                    </span>
+                            </div>
+                            <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...</div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a class="text-center" href="#">
+                            <strong>Read All Messages</strong>
+                            <i class="fa fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+                <!-- /.dropdown-messages -->
+            </li>
+            <!-- /.dropdown -->
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-tasks fa-fw"></i> <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-tasks">
+                    <li>
+                        <a href="#">
+                            <div>
+                                <p>
+                                    <strong>Task 1</strong>
+                                    <span class="pull-right text-muted">40% Complete</span>
+                                </p>
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100"
+                                         style="width: 40%">
+                                        <span class="sr-only">40% Complete (success)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <p>
+                                    <strong>Task 2</strong>
+                                    <span class="pull-right text-muted">20% Complete</span>
+                                </p>
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"
+                                         style="width: 20%">
+                                        <span class="sr-only">20% Complete</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <p>
+                                    <strong>Task 3</strong>
+                                    <span class="pull-right text-muted">60% Complete</span>
+                                </p>
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"
+                                         style="width: 60%">
+                                        <span class="sr-only">60% Complete (warning)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <p>
+                                    <strong>Task 4</strong>
+                                    <span class="pull-right text-muted">80% Complete</span>
+                                </p>
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"
+                                         style="width: 80%">
+                                        <span class="sr-only">80% Complete (danger)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a class="text-center" href="#">
+                            <strong>See All Tasks</strong>
+                            <i class="fa fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+                <!-- /.dropdown-tasks -->
+            </li>
+            <!-- /.dropdown -->
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-bell fa-fw"></i> <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-alerts">
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-comment fa-fw"></i> New Comment
+                                <span class="pull-right text-muted small">4 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-twitter fa-fw"></i> 3 New Followers
+                                <span class="pull-right text-muted small">12 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-envelope fa-fw"></i> Message Sent
+                                <span class="pull-right text-muted small">4 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-tasks fa-fw"></i> New Task
+                                <span class="pull-right text-muted small">4 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-upload fa-fw"></i> Server Rebooted
+                                <span class="pull-right text-muted small">4 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a class="text-center" href="#">
+                            <strong>See All Alerts</strong>
+                            <i class="fa fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+                <!-- /.dropdown-alerts -->
+            </li>
+            <!-- /.dropdown -->
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-user">
+                    <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
+                    </li>
+                    <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li><a href="login.html"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                    </li>
+                </ul>
+                <!-- /.dropdown-user -->
+            </li>
+            <!-- /.dropdown -->
+        </ul>
+        <!-- /.navbar-top-links -->
+
+        <div class="navbar-default sidebar" role="navigation">
+            <div class="sidebar-nav navbar-collapse">
+                <ul class="nav" id="side-menu">
+                    <li class="sidebar-search">
+                        <div class="input-group custom-search-form">
+                            <input type="text" class="form-control" placeholder="Search...">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="button">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <!-- /input-group -->
+                    </li>
+                    <li>
+                        <a href="schedule.html"><i class="fa  fa-calendar  fa-fw"></i>Schedule</a>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-dashboard fa-fw"></i>DashBoard<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="dashboard.html">dashboard I.</a>
+                            </li>
+                            <li>
+                                <a href="dashboard.html">dashboard II.</a>
+                            </li>
+                            <li>
+                                <a href="dashboard.html">dashboard III.</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-table fa-fw"></i>Tables<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="tables.html">Tables I.</a>
+                            </li>
+                            <li>
+                                <a href="tables.html">Tables II.</a>
+                            </li>
+                            <li>
+                                <a href="tables.html">Tables III.</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-edit fa-fw"></i>Reports<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="reports.html">Reports I.</a>
+                            </li>
+                            <li>
+                                <a href="reports.html">Reports II.</a>
+                            </li>
+                            <li>
+                                <a href="reports.html">Reports III.</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                </ul>
+            </div>
+            <!-- /.sidebar-collapse -->
+        </div>
+        <!-- /.navbar-static-side -->
+    </nav>
+
+    <div id="page-wrapper">
+        <br/>
+        <!--<div class="js_viewer_loader" id="load_wheel" style="position:absolute;z-index:70000;top:254px;display:none"></div>-->
+        <div class="js_viewer_loader" id="load_wheel"></div>
+        <div id="designerContent"></div>
+
+        <table class="Main" cellpadding="0" cellspacing="4">
+            <tr>
+
+                <td id="viewerContent" style="height: 90vh"></td>
+                <td width="150px" id="stLeftPanel">
+                    <table class="LeftPanel" cellpadding="0" cellspacing="0">
+                        <!--<tr>-->
+                        <!--<td height="60px">-->
+                        <!--<img style="position: absolute; width: 150px; left: 0px; top: 5px;" src="images/StimulsoftReports.png"/>-->
+                        <!--<img style="position: absolute; width: 30px; height: 30px; left: 105px; top: 25px;" src="images/Js.png"/>-->
+                        <!--</td>-->
+                        <!--</tr>-->
+                        <tr>
+                            <td>
+                                <div class="Buttons">
+                                    <script type="text/javascript">
+                                        // Report id and names for this Demo
+                                        var reportsCollection = {
+                                            "SimpleList": "Simple List",
+                                            "OnlineStoreSales": "Online Store Sales",
+                                            "SiteStatistics": "Site Statistics",
+                                            "UsersAppleIpad": "Users Apple iPad",
+                                            "TwoSimpleLists": "Two Simple Lists",
+                                            "HighlightCondition": "Highlight Condition",
+                                            "Shapes": "Shapes",
+                                            "Images": "Images",
+                                            "Indicators": "Indicators",
+                                            "BarCodes": "Bar-Codes",
+                                            "MasterDetail": "Master Detail",
+                                            "ParametersHighlightCondition": "Parameters Highlight Condition",
+                                            "ParametersSelectingCountry": "Parameters Selecting Country"
+                                        };
+
+                                        // Render all report buttons
+                                        for (var reportName in reportsCollection) {
+                                            document.write(
+                                                "<a class=\"ReportButton\" id=\"" + reportName + "\"" +
+                                                "onmouseover=\"onButtonMouseOver(this)\"" +
+                                                "onmouseout=\"onButtonMouseOut(this)\"" +
+                                                "onclick=\"onButtonClick(this, " + reportName + ")\">" +
+                                                "<table cellpadding=\"0\" cellspacing=\"0\">" +
+                                                "<tr><td style=\"text-align: center; width: 100%;\"><img src=\"Common/stimulsoft/images/" + reportName + ".png\" /></td></tr>" +
+                                                "<tr><td class=\"Caption\">" + reportsCollection[reportName] + "</td></tr>" +
+                                                "</table>" +
+                                                "</a>");
+                                        }
+                                    </script>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+
+
+    </div>
+    <!-- /#page-wrapper -->
+
+</div>
+</body>
+</html>

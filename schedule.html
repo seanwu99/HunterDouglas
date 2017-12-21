@@ -1,0 +1,1797 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <title>RTS Scheduling - schedule</title>
+
+    <style>
+
+
+        ::-webkit-scrollbar {
+            width: 1px; /* for vertical scrollbars */
+            height: 10px; /* for horizontal scrollbars */
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(200, 200, 200, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(50, 50, 50, 0.1);
+        }
+
+        .flipped {
+            -webkit-transform: rotateY(180deg);
+            -moz-transform: rotateY(180deg);
+            -ms-transform: rotateY(180deg);
+            -o-transform: rotateY(180deg);
+            transform: rotateY(180deg);
+        }
+
+        /* flip the pane when hovered */
+        /*.flip-container:hover .flipper, .flip-container.hover .flipper {*/
+        /*transform: rotateY(180deg);*/
+        /*}*/
+
+        /*!* entire container, keeps perspective *!*/
+        .flip-container {
+            perspective: 1000px;
+        }
+
+        .flip-container, .flip-front, .flip-back {
+            /*width: 100%;*/
+            /*padding-left: 2%;*/
+            /*padding-right: 2%;*/
+            /*height: 90%;*/
+        }
+
+        /* flip speed goes here */
+        .flipper {
+            transition: 1s;
+            transform-style: preserve-3d;
+            position: inherit;
+        }
+
+        /* hide back of pane during swap */
+        .flip-front, .flip-back {
+            backface-visibility: hidden;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* front pane, placed above back */
+        .flip-front {
+            z-index: 2;
+            /* for firefox 31 */
+            transform: rotateY(0deg);
+        }
+
+        /* back, initially hidden pane */
+        .flip-back {
+            transform: rotateY(180deg);
+        }
+
+        .textBottom {
+            z-index: 99;
+            position: inherit;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            left: 20px;
+            top: 130px;
+        }
+
+        .progress {
+            background: rgba(245, 245, 245, 1);
+            border: 0px solid rgba(245, 245, 245, 1);
+            border-radius: 4px;
+            height: 20px;
+        }
+
+        .pb {
+            background: rgba(66, 139, 202, 1);
+        }
+
+        .progress-striped .pb {
+            background-color: rgba(66, 139, 202, 1);
+            /*background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.25, rgba(255, 255, 255, 0.15)));*/
+            /*background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);*/
+            background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+            /*background-size: 20px 20px;*/
+        }
+
+
+    </style>
+
+    <script id="sap-ui-bootstrap"
+            src="https://sapui5.netweaver.ondemand.com/resources/sap-ui-core.js"
+            data-sap-ui-libs="sap.m,sap.ui.commons"
+            data-sap-ui-theme="sap_belize">
+    </script>
+    <script src="Common/highcharts/highstock.js"></script>
+    <script src="Common/highcharts/highcharts-more.js"></script>
+    <script src="Common/highcharts/draggable-points.js"></script>
+
+    <link href="Common/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <script src="Common/bootstrap/js/bootstrap.min.js"></script>
+
+    <link href='Common/font-awesome/css/font-awesome.min.css' rel='stylesheet' type='text/css'>
+
+
+    <link href="Common/metisMenu/metisMenu.min.css" rel="stylesheet">
+    <script src="Common/metisMenu/metisMenu.min.js"></script>
+
+    <link href="Common/css/schedule.css" rel="stylesheet">
+    <script src="Common/js/schedule.js"></script>
+
+    <script>
+        var isDev = false;
+        var USERNAME = 'user 1';
+        var picsList = [];
+        //        $(document).ready(ll);
+        $(document).ready(function () {
+            isDev = (window.location.href.indexOf('http://localhost') >= 0);
+            cal();
+
+            for (var i = 1; i <= Months[tMonth][1]; i++) {
+
+                var seriesDataDuration = [], categoriesDataOrder = [], categoriesDataPartNo = [],
+                    categoriesDataMold = [], categoriesDataPress = [],
+                    categoriesBackground = [];
+                var n0 = 1, n1 = Math.random() * 80 + 20;
+                for (var n = n0; n <= n1; n++) {
+                    var pn = (100000 + Math.round(900000 * Math.random())) + '/' + (100 + 100 * Math.round(100 * Math.random()));
+                    var pm = (1000000 + Math.round(9000000 * Math.random())) + '/' + (100 + 10 * Math.round(100 * Math.random()));
+                    var ss = 5 * Math.round(parseInt(pn.split("/")[1]) / parseInt(pm.split("/")[1]) * 12);
+                    if (ss > 1440) ss = 1440;
+                    var s0 = (1440 - ss) * Math.random();
+                    seriesDataDuration.push([s0, s0 + ss]);
+                    categoriesDataOrder.push(n + ' - Order' + Math.round(123456789 * Math.random()));
+                    categoriesDataPartNo.push('PN' + pn.split("/")[0] + '/' + pn.split("/")[1]);
+                    categoriesDataMold.push('M' + pm.split("/")[0] + '/' + pm.split("/")[1] + "/");
+                    categoriesDataPress.push('P' + (1000 + Math.round(9000 * Math.random())) + '/------');
+                    categoriesBackground.push('');
+                }
+                sectionN(i);
+                dayOrderX(i, seriesDataDuration, categoriesDataOrder);
+//                $("#progress" + i).bind("scroll", function (e) { //page is the ID of the div im scrolling
+//                    log(e);
+//                    log('progress' + i);
+//                    log(e.scrollTop + " // " + e.clientWidth);
+////
+////                    if (( $(this).height() + $(this).scrollTop() ) =>
+////                    $(this).innerHeight()
+////                )
+////                    {
+////                        //Test it first without padding. Then see if you need to tweak the left part of the condition
+////                    }
+//                });
+                collapseCards_innerHTML(i);
+//                if (i < 5) {
+                collapse_Chart(i, seriesDataDuration, categoriesDataOrder, categoriesDataPartNo, categoriesDataMold, categoriesDataPress, categoriesBackground);
+//                }
+
+            }
+
+            $("#MonthlyCalendar").scrollspy({target: "#navbarH", offset: 50});
+//            return;
+            $("#navbarH").on("activate.bs.scrollspy", function () {
+//                log('navbarH');
+                var dayN;
+                for (var n = 1; n <= Months[tMonth][1]; n++) {
+                    dayN = document.getElementById('day' + n);
+                    dayN.style.background = "#ffffff";
+                    if (tm.getDate() != n) {
+                        dayN.style.color = "#000000";
+                    } else {
+                        dayN.style.color = "#ff0000";
+                    }
+
+                }
+                dayN = document.getElementById($("#navbarH .nav li.active > a").text());
+
+                dayN.style.background = "#cacaca";
+                if ($(".nav li.active > a").text() != 'day' + tm.getDate()) {
+                    dayN.style.color = "#ffffff";
+                } else {
+                    dayN.style.color = "#ff0000";
+                }
+
+
+            });
+            $(".navbarH").hide();
+
+            document.getElementById('day' + tm.getDate()).style.background = "#ffffff";
+            document.getElementById('day' + tm.getDate()).style.color = "red";
+
+
+            var picsLoad = $.get("Common/pics/picsList", function () {
+//                log("success");
+            }).done(function (e) {
+                picsList = [];
+                picsList = e.split("/");
+
+                log("picsList : " + picsList.length);
+
+                tableMold_innerHTML();
+            }).fail(function () {
+//                log("fail");
+            }).always(function () {
+//                log("always");
+            });
+        });
+
+        function ApplicationHeader(d) {
+
+            new sap.ui.commons.ApplicationHeader({
+                logoSrc: d.logoSrc,
+                logoText: d.logoText,
+                displayLogoff: true,
+                userName: d.user,
+                displayWelcome: true,
+            }).placeAt(d.elm);
+        }
+
+
+        var Months = [['January', 31], ['February', 28], ['March', 31], ['April', 30], ['May', 31], ['June', 30], ['July', 31], ['August', 31], ['September', 30], ['October', 31], ['November', 30], ['December', 31]];
+        var days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        var tm = new Date(new Date() - 30 * 24 * 3600 * 1000);
+        var tDate = tm.getDate();
+        var tMonth = tm.getMonth();
+        var week0 = (new Date(tm - (tDate - 1) * 24 * 3600 * 1000)).getDay();
+
+        var d35 = [];
+
+
+        function cal() {
+
+            for (var i = Months[tMonth - 1][1] - week0 + 2; i <= Months[tMonth - 1][1]; i++) {
+                d35.push('L' + i);
+            }
+            for (var i = 1; i <= Months[tMonth][1]; i++) {
+                d35.push('P' + i);
+            }
+            var tt = 1;
+            while (d35.length < 35) {
+//                for (var i = 1; i <= Months[tMonth][1]; i++) {
+                d35.push('N' + tt++);
+//                }
+            }
+//            log(d35);
+            while (d35.length > 35 && d35.length < 42) {
+                d35.push('N' + tt++);
+            }
+
+            var pr1 = '', pr2 = '';
+            for (var i = 1; i <= Months[tMonth][1]; i++) {
+                pr1 += '<li><a href="#section' + i + '">day' + i + '</a></li>';
+                pr2 += '<div id="section' + i + '"></div>';
+            }
+            document.getElementById('sectionX').innerHTML = pr1;
+            document.getElementById('MonthlyCalendar').innerHTML = pr2;
+            var pr = '';
+
+
+            var pr =
+                '<table  style="background: #fff; border-radius: 0 0 1em 1em;box-shadow: 0 2px 1px rgba(0, 0, 0, .2), 0 3px 1px #fff; display: inline-block;padding: 1.5em;">' +
+                '<thead style="color: #ff0000; font-size: 90%; font-weight: 700;">' +
+                '<tr style="margin: 0 0 0 0">';
+//            var pl = '10px';
+            for (var i = 1; i <= days.length; i++) {
+                pr += '<td style="padding: 15px 5px 15px 5px">' + days[i - 1].substring(0, 2) + '</td>';
+            }
+            pr += '</tr></thead><tbody >';
+            var dd = 0;
+            for (var m = 1; m <= d35.length / 7; m++) {
+                pr += '<tr>';
+                for (var n = 1; n <= 7; n++) {
+                    if (d35[dd].substring(0, 1) == 'P') {
+                        pr += '<td id="day' + d35[dd].substring(1) + '" style="text-align: center; padding: 5px 5px 5px 5px; background: #ffffff; cursor:pointer" onclick="location.href = \'#section' + d35[dd].substring(1) + '\'">' +
+                            d35[dd++].substring(1) + '</td>';
+                    } else {
+                        pr += '<td style="text-align: center; padding: 5px 5px 5px 5px;color:#cacaca;">' + d35[dd++].substring(1) + '</td>';
+                    }
+                }
+                pr += '</tr>';
+            }
+            pr += '</tbody></table>' +
+                '<div  style="position:absolute;top: -25px;left: 2em; background: #fff; border-radius: 4px;  box-shadow: 0 3px 1px rgba(0, 0, 0, .3), 0 -1px 1px rgba(0, 0, 0, .2); display: inline-block;margin: 8px; height: 30px;width: 8px;"></div>' +
+                '<div  style="position:absolute;top: -25px;left: 3em; background: #fff; border-radius: 4px;  box-shadow: 0 3px 1px rgba(0, 0, 0, .3), 0 -1px 1px rgba(0, 0, 0, .2); display: inline-block;margin: 8px; height: 30px;width: 8px;"></div>' +
+                '<div  style="position:absolute;top: -25px;right: 3em; background: #fff; border-radius: 4px;  box-shadow: 0 3px 1px rgba(0, 0, 0, .3), 0 -1px 1px rgba(0, 0, 0, .2); display: inline-block;margin: 8px; height: 30px;width: 8px;"></div>' +
+                '<div  style="position:absolute;top: -25px;right: 2em; background: #fff; border-radius: 4px;  box-shadow: 0 3px 1px rgba(0, 0, 0, .3), 0 -1px 1px rgba(0, 0, 0, .2); display: inline-block;margin: 8px; height: 30px;width: 8px;"></div>';
+            document.getElementById('calendarPAD').innerHTML = pr;
+        }
+
+        function sectionN(_day) {
+            var pr = ' <div id="dayOrderX' + _day +
+                '" class="row" style="padding: 15px 0 0 0;"></div>' +
+                '<br/>' +
+                '<div id="collapse' + _day + '"' + ' style="margin: -15px 0 0 0">' +
+                '<div class="panel panel-default" style="border:0; box-shadow: none;">' +
+                '<div id="collapse' + _day + '_Cards" class="collapse" style="border:0; box-shadow: none;"></div>' +
+                '</div>' +
+                '<div class="panel" style="border:0; box-shadow: none;">' +
+                '<div id="collapse' + _day + '_Chart" class="panel collapse" style="height:600px; margin: 0 0 0 0px; border:0; box-shadow: none;"></div>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+            document.getElementById('section' + _day).innerHTML = pr;
+//            log(' section"+_day).offsetWidth // ' + _day + ' ' + document.getElementById("section" + _day).offsetWidth);
+        }
+
+        function dayOrderX(_day, _seriesDataDuration, _categoriesDataOrder) {
+            var barWidth = ( document.getElementById("section1").offsetWidth - 160) / 15;
+
+            var ss = '', ww = 0;
+//            log(_day + "/section/ " + document.getElementById("section" + _day).offsetWidth);
+            for (var i = 0; i < _seriesDataDuration.length; i++) {
+                var cc = Math.round(100 * Math.random());
+
+
+                ss += '<div class="progress-bar " role="progressbar" style="width:' +
+                    barWidth +
+                    'px; background: ' + chartColors[i % 10] + '" ' +
+                    'onclick="orderBar_Click(' + 'this,' + _day + ',' + i + ')">' +
+                    //                    _categoriesDataOrder[i] + '</div>';
+                    '<b>' + (i + 1) + '</b>' + ' - ' + cc + '%' + '</div>';
+
+                ww += barWidth;
+//                log(_categoriesDataOrder[i]);
+            }
+//            log('week0 ' + (_day + week0) % 7);
+            var dw = _day + week0 - 2;
+            if (dw < 0) {
+                dw = 6;
+            } else {
+                dw = (_day + week0 - 2) % 7;
+            }
+            var pr = '<div>' +
+                '<a data-toggle="collapse" data-parent="#collapse' + _day +
+                '" href="#collapse' + _day + '_Cards">' +
+                '<div class="progress-bar" role="progressbar" ' +
+                'style="border-radius: 3px; width:150px; margin: 0px 10px 0px 20px; font-size: 14px" ' +
+                'onclick="dayBar_Click(' + 'this,' + _day + ')">' +
+                '<i class="fa fa-calendar-check-o  fa-1x" style="width: 30px"></i><b>' +
+                (days[dw]).substring(0, 3) + ', ' + (Months[tMonth][0]).substring(0, 3) + ' ' + _day + '</b></div></a>' +
+                '<div id="progress' + _day + '" ' +
+                'style="overflow-x: hidden;" onmouseover="orderBar_onmouseover(this)" onmouseout="orderBar_onmouseout(this)" onscroll="orderBar_onscroll(this)">' +
+                //                ' onmouseout="orderScroll(this)"' +
+                //                'style="overflow-x: hidden;" onmouseover=function () {this.style.overflowX = "scroll";  } onmouseout="outOfBar(this)">' +
+                '<div class="progress" style="cursor: pointer;margin: 0px 0px 0px 0px; padding: 0 0 0 0; background: #ccc; width: ' + ww + 'px;">' + ss +
+                '</div></div></div>';
+            document.getElementById('dayOrderX' + _day).innerHTML = pr;
+        }
+
+
+        var collapse_ChartV = [];
+
+        function collapse_Chart(_DAY_, seriesDataDuration, categoriesDataOrder, categoriesDataPartNo, categoriesDataMold, categoriesDataPress, categoriesBackground) {
+            collapse_ChartV[_DAY_] = Highcharts.chart('collapse' + _DAY_ + '_Chart', {
+                chart: {
+                    marginTop: 100,
+                    marginBottom: 50,
+                    marginLeft: 170,
+//                    marginRight: 50,
+                    height: 600,
+                    inverted: false,
+                    animation: false,
+                },
+
+                title: {
+                    text: null
+                },
+                subtitle: {
+                    text: null
+                },
+//
+//                xAxis:
+//                    {
+//                        min: 0,
+//                        max: 14,
+//                        opposite: false,
+//                        categories: categoriesDataOrder,
+//                        labels: {
+//                            enabled: true
+//                        },
+//                        events: {
+//                            setExtremes: function (e) {
+//                                if (false && e.trigger === 'navigator') {
+//                                    document.getElementById('dayOrder' + _DAY_).scrollLeft = 6435 * ((100 * this.min) / 100) / 86;
+//                                }
+//                            }
+//                        }
+//                    },
+                xAxis: [
+                    {
+                        min: 0,
+                        max: 14,
+                        visible: true,
+                        opposite: true,
+                        categories: categoriesDataOrder,
+                        labels: {
+                            rotation: -45,
+                            enabled: true
+                        },
+                        events:
+                            {
+                                setExtremes: function (e) {
+//                                log('setExtremes/xAxis');
+                                    if (false && e.trigger === 'navigator') {
+                                        document.getElementById('dayOrder' + _DAY_).scrollLeft = 6435 * ((100 * this.min) / 100) / 86;
+                                    }
+                                }
+                            }
+                        ,
+                    },
+                    {
+                        categories: categoriesDataPartNo,
+                        visible:
+                            false,
+                    },
+                    {
+                        categories: categoriesDataMold,
+                        visible:
+                            false,
+                    },
+                    {
+                        categories: categoriesDataPress,
+                        visible:
+                            false,
+                    },
+                    {
+                        categories: categoriesBackground,
+                        visible:
+                            false,
+                    }
+                ],
+
+                scrollbar: {
+                    enabled: false,
+//                    showFull: false,
+//                    liveRedraw: false,
+//                    barBackgroundColor: 'white',
+//                    barBorderRadius: 7,
+//                    barBorderWidth: 0,
+//                    buttonBackgroundColor: 'white',
+//                    buttonBorderWidth: 0,
+//                    buttonArrowColor: 'white',
+//                    buttonBorderRadius: 7,
+//                    rifleColor: 'yellow',
+//                    trackBackgroundColor: 'white',
+//                    trackBorderWidth: 0,
+//                    trackBorderColor: 'white',
+//                    trackBorderRadius: 7
+                }
+                ,
+                yAxis: {
+                    reversed: true,
+                    title:
+                        {
+                            text: null
+                        },
+                    labels: {
+                        formatter: function () {
+//                            var tm = this.value + 8 * 60;
+//                            if (tm < 12 * 60) {
+//                                return (new Date(tm * 60 * 1000)).toISOString().substr(11, 5) + 'AM';
+//                            } else if (tm == 12 * 60) {
+//                                return (new Date(tm * 60 * 1000)).toISOString().substr(11, 5) + 'PM';
+//                            } else if (tm > 12 * 60 && tm < 24 * 60) {
+//                                return (new Date((tm - 12 * 60) * 60 * 1000)).toISOString().substr(11, 5) + 'PM';
+//                            } else {
+//                                return (new Date((tm - 24 * 60) * 60 * 1000)).toISOString().substr(11, 5) + 'AM';
+//                            }
+//                            if (this.value < 16 * 60) {
+//                                return (new Date((this.value + 8 * 60) * 60 * 1000)).toISOString().substr(11, 8);
+//                            } else if (this.value == 16 * 60) {
+//                                return (new Date(0)).toISOString().substr(11, 8);
+//                            } else {
+//                                return (new Date((this.value - 16 * 60) * 60 * 1000)).toISOString().substr(11, 8);
+//                            }
+                            return (new Date((this.value + 0 * 8 * 60) * 60 * 1000)).toISOString().substr(11, 8);
+                        },
+
+                    },
+                    min: 0,
+                    max:
+                        1440,
+                    tickInterval:
+                        120,
+                },
+                plotOptions: {
+                    series: {
+                        events: {
+//                            load: function () {
+//                                //add report div
+////                            var ch = this,
+////                                x = 20,
+////                                y = 57;
+////
+////                            ch.flashText = ch.renderer.text('<div id="flash"><div id="report"></div></div>', x, y + 10, true).attr({
+////                                zIndex: 101
+////                            }).add();
+//                            },
+//                            mouse
+//                            dblclick: function () {
+//                                console.log('dblclick');
+////                            reloadFlash();
+////                            $('#report').html('dbclick on chart');
+//                            },
+//                            click: function () {
+//                                console.log('click chart');
+////                            reloadFlash();
+////                            $('#report').html('click on chart');
+//                            },
+//                            contextmenu: function () {
+////                            reloadFlash();
+////                            $('#report').html('context menu on chart');
+//                            }
+                        },
+                        pointWidth: 20//width of the column bars irrespective of the chart size
+                    },
+                    columnrange: {
+                        dataLabels: {
+                            enabled: true,
+//                        useHTML: true,
+                            formatter:
+
+                                function () {
+                                    var v = '';
+//                        return this.y + '/ff/';
+//                                if (this.y < 16 * 60) {
+//                                    v = (new Date((this.y + 8 * 60) * 60 * 1000)).toISOString().substr(11, 5) + ':00';
+//                                } else if (this.y == 16 * 60) {
+//                                    v = (new Date(0)).toISOString().substr(11, 8);
+//                                } else {
+//                                    v = (new Date((this.y - 16 * 60) * 60 * 1000)).toISOString().substr(11, 5) + ':00';
+//                                }
+                                    v = (new Date((this.y + 0 * 8 * 60) * 60 * 1000)).toISOString().substr(11, 5) + ':00';
+                                    return v;
+                                }
+                        }
+                    }
+                },
+
+                series: [
+                    {
+                        visible: true,
+                        type: 'columnrange',
+                        name: 'Duration',
+                        colorByPoint: true,
+                        data: seriesDataDuration,
+                        draggableY: true,
+                        dragMinY: 0,
+                        dragMaxY: 1440,
+//                    dragSensitivity: 10,
+                        dragPrecisionY: 5,
+                        cursor: 'ns-resize',
+//                    draggableY: true,
+//                    draggableX: false,
+                    },
+//                    {
+//                        visible: true,
+//                        type: 'columnrange',
+//                        name: 'Duration',
+//                        colorByPoint: true,
+//                        data: seriesDataDuration,
+////                        draggableY: false,
+////                        dragMinY: 0,
+////                        dragMaxY: 1440,
+////                    dragSensitivity: 10,
+////                        dragPrecisionY: 5,
+////                        cursor: 'ns-resize',
+////                    draggableY: true,
+////                    draggableX: false,
+//                    },
+                ],
+                tooltip:
+                    {
+                        useHTML: false,
+                        formatter:
+
+                            function () {
+//                        log('this.point.high ' + this.point.high + '/' + this.point.low);
+                                return '<b>' + this.key + '</b><br>' +
+                                    //                            'Duration: ' + (new Date((this.point.high - this.point.low ) * 60 * 1000)).toISOString().substr(11, 8);
+                                    'Duration: ' + (this.point.high - this.point.low ) + ' min';
+                            }
+                    },
+                legend: {
+                    enabled: false
+                },
+                credits: {
+                    enabled: false,
+                    href:
+                        'http://www.rtsperfectplant.com/',
+                    position:
+                        {
+                            align: 'right',
+                            x:
+                                -10,
+                            verticalAlign:
+                                'bottom',
+                            y:
+                                -5
+                        },
+                    style: {
+                        cursor: 'pointer',
+                        color:
+                            '#999999',
+                        fontSize:
+                            '9px'
+                    },
+                    text: 'RTS Consulting Inc.'
+                },
+                exporting: {
+                    enabled: false
+                },
+            });
+
+        }
+
+
+        function collapseX(_day) {
+
+        }
+
+        function log(obj) {
+            console.log(obj);
+        }
+
+        function orderBar_onmouseover(dv) {
+//            log(dv.style);
+            dv.style.overflowX = "scroll";
+        }
+
+        function orderBar_onscroll(dv) {
+//            log(document.getElementById("section1").offsetWidth);
+            log(dv.id);
+            var n = parseInt(dv.id.substr(8));
+            var barWidth = ( document.getElementById("section1").offsetWidth - 160) / 15;
+
+            console.log(dv.scrollLeft, dv.scrollTop);
+//            log(1 + dv.scrollLeft / barWidth);
+
+            collapse_ChartV[n].xAxis[0].setExtremes(( dv.scrollLeft / barWidth), ( dv.scrollLeft / barWidth) + 14);
+
+            for (var i = 1; i <= 12; i++) {
+                if (i + collapse_ChartV[n].series[0].xAxis.min <= collapse_ChartV[n].series[0].data.length) {
+                    dayCard_innerHTML(n, i, 'F');
+                    dayCard_innerHTML(n, i, 'B');
+                } else {
+                    dayCard_innerHTML(n, i, 'f');
+                    dayCard_innerHTML(n, i, 'b');
+                }
+
+            }
+//            log(dv.scrollLeft);
+//            document.getElementById('a1').innerHTML = dv.scrollTop + "/" + dv.clientWidth + "/" + dv.scrollLeft +
+//                '<br>' + collapse1_Chart.xAxis[0].min + '/' + collapse1_Chart.xAxis[0].max;
+//        var m = dv.scrollLeft / 6435 * 99;
+//        collapse1_Chart.xAxis.min = m;
+//        collapse1_Chart.xAxis.max = 12 + m;
+//        collapse1_Chart.refresh();
+
+//        collapse1_Chart.xAxis[0].isDirty = true;
+//        collapse1_Chart.redraw(true);
+        }
+
+        function orderBar_onmouseout(dv) {
+            dv.style.overflowX = "hidden";
+
+        }
+
+        function dayBar_Click(dv, d) {
+            log('dayBar_Click');
+            if ($('#collapse' + d + '_Chart').hasClass('in')) {
+//                log('dayBar_Click');
+                $('#collapse' + d + '_Chart').collapse('hide');
+                $('#collapse' + d + '_Cards').collapse('show');
+            }
+//            if ($('#collapse' + d + '_Chart').hasClass('in')) {
+//
+//            }
+            for (var i = 1; i <= 12; i++) {
+//                log('collapse_ChartV[d].series[0].xAxis.min // ' + collapse_ChartV[d].series[0].xAxis.min);
+//                log('collapse_ChartV[d].series[0].data.length // ' + collapse_ChartV[d].series[0].data.length);
+                if (i + collapse_ChartV[d].series[0].xAxis.min <= collapse_ChartV[d].series[0].data.length) {
+                    dayCard_innerHTML(d, i, 'F');
+                    dayCard_innerHTML(d, i, 'B');
+                } else {
+                    dayCard_innerHTML(d, i, 'f');
+                    dayCard_innerHTML(d, i, 'b');
+                }
+
+            }
+        }
+
+        function d2t(t) {
+            var v = '';
+//            if (t < 16 * 60) {
+//                v = (new Date((t + 8 * 60) * 60 * 1000)).toISOString().substr(11, 5);
+//            } else if (t == 16 * 60) {
+//                v = (new Date(0)).toISOString().substr(11, 5);
+//            } else {
+//                v = (new Date((t - 16 * 60) * 60 * 1000)).toISOString().substr(11, 5);
+//            }
+            v = (new Date((t + 0 * 8 * 60) * 60 * 1000)).toISOString().substr(11, 5);
+            return v;
+        }
+
+        function dayCard_innerHTML(d, n, side) {
+            var nm = Math.round(n + collapse_ChartV[d].series[0].xAxis.min - 1);
+            if (side == 'F') {
+                var pr =
+                    ' <div style="position:absolute; top: 30px" >' +
+                    '     <img src="Common/pics/1-1.png" width="100%" height="125px" class="img-fluid">' +
+                    ' </div>' +
+                    '<ul class="list-group" >' +
+                    '    <li class="list-group-item active" style="padding: 5px 20px 5px 20px; text-align: center; background-color: ' +
+                    chartColors[nm % 10] + '; border-color: ' + chartColors[nm % 10] + ';"><b>' +
+                    collapse_ChartV[d].xAxis[0].categories[nm] + '</b></li>' +
+                    '    <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: .95;">' +
+                    'From ' + d2t(collapse_ChartV[d].series[0].data[nm].low) + ' To ' + d2t(collapse_ChartV[d].series[0].data[nm].high) +
+                    ' ,  ' + Math.round(collapse_ChartV[d].series[0].data[nm].high - collapse_ChartV[d].series[0].data[nm].low) + ' min' + '</li>' +
+                    '    <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: .95;">' +
+                    'Part No.: ' +
+                    collapse_ChartV[d].xAxis[1].categories[nm].split("/")[0] + ' , ' +
+                    collapse_ChartV[d].xAxis[1].categories[nm].split("/")[1] +
+                    '</li>' +
+                    '    <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: .95;">' +
+                    'Mold: ' +
+                    collapse_ChartV[d].xAxis[2].categories[nm].split("/")[0] + ' , ' +
+                    collapse_ChartV[d].xAxis[2].categories[nm].split("/")[1] +
+                    '</li>' +
+                    '    <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: .95;">' +
+                    'Press: ' +
+                    collapse_ChartV[d].xAxis[3].categories[nm].split("/")[0] + ' , ' +
+                    collapse_ChartV[d].xAxis[3].categories[nm].split("/")[1] +
+                    '</li>' +
+                    '</ul>';
+                document.getElementById('collapse' + d + '_Cards' + n + 'F').innerHTML = pr;
+            } else if (side == 'f') {
+                var pr =
+                    '<ul class="list-group">' +
+                    '    <li class="list-group-item active" style="padding: 5px 20px 5px 20px; text-align: center; background-color:lightgrey; border-color: lightgrey"><b>---</b></li>' +
+                    '    <li class="list-group-item" style="padding: 5px 20px 5px 20px;">---</li>' +
+                    '    <li class="list-group-item" style="padding: 5px 20px 5px 20px;">---</li>' +
+                    '    <li class="list-group-item" style="padding: 5px 20px 5px 20px;">---</li>' +
+                    '    <li class="list-group-item" style="padding: 5px 20px 5px 20px;">---</li>' +
+                    '</ul>';
+                document.getElementById('collapse' + d + '_Cards' + n + 'F').innerHTML = pr;
+            } else if (side == 'B') {
+                var pr = "";
+                if (collapse_ChartV[d].xAxis[2].categories[nm].split("/")[2].length > 0) {
+                    pr =
+                        ' <div style="position:absolute; top: 30px" >' +
+                        '     <img src="http://cdn.nanxiongnandi.com/bing/' +
+                        picsList[collapse_ChartV[d].xAxis[2].categories[nm].split("/")[2]] +
+                        '" width="100%" height="125px" class="img-fluid">' +
+                        ' </div>';
+                }
+                pr +=
+                    ' <ul class="list-group" >' +
+                    '     <li class="progress" style="height: 30px;  margin-bottom: 0;">' +
+                    '       <div class="progress-bar progress-bar-striped" role="progressbar"  style="padding-top: 5px; font-size: 14px;' +
+                    '           background-image: -webkit-gradient(linear,0 100%,100% 0,color-stop(0.25,rgba(255, 255, 255, 0.15),color-stop(0.25,transparent),color-stop(0.5,transparent),color-stop(0.5,rgba(255, 255, 255, 0.15)),color-stop(0.75,rgba(255, 255, 255, 0.15)),color-stop(0.75,transparent),to(transparent))); background-image: -webkit-linear-gradient(45deg,rgba(255, 255, 255, 0.15) 25%,transparent 25%,transparent 50%,rgba(255, 255, 255, 0.15) 50%,rgba(255, 255, 255, 0.15) 75%,transparent 75%,transparent); background-image: linear-gradient(45deg,rgba(255, 255, 255, 0.15) 25%,transparent 25%,transparent 50%,rgba(255, 255, 255, 0.15) 50%,rgba(255, 255, 255, 0.15) 75%,transparent 75%,transparent);' +
+                    '           width:' + '20' + '%;' +
+                    '           background-color: ' + chartColors[nm % 10] + ';">' +
+                    '           <span style="position: absolute; display: block; width: 100%;"><b>50% Completed</b></span>' +
+                    '       </div>' +
+                    '     </li>' +
+                    '     <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: .6; color: #000">Starting: 00:00:00</li>' +
+                    '     <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: .6; color: #000">Time remaining: </li>' +
+                    '     <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: .6; color: #000">Items remaining: </li>' +
+                    '     <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: .6; color: #000">Productivity: </li>' +
+                    ' </ul>';
+                document.getElementById('collapse' + d + '_Cards' + n + 'B').innerHTML = pr;
+            } else if (side == 'b') {
+                var pr =
+                    '<ul class="list-group">' +
+                    '    <li class="list-group-item active" style="padding: 5px 20px 5px 20px; text-align: center; background-color:lightgrey; border-color: lightgrey"><b>---</b></li>' +
+                    '    <li class="list-group-item" style="padding: 5px 20px 5px 20px;">---</li>' +
+                    '    <li class="list-group-item" style="padding: 5px 20px 5px 20px;">---</li>' +
+                    '    <li class="list-group-item" style="padding: 5px 20px 5px 20px;">---</li>' +
+                    '    <li class="list-group-item" style="padding: 5px 20px 5px 20px;">---</li>' +
+                    '</ul>';
+                document.getElementById('collapse' + d + '_Cards' + n + 'B').innerHTML = pr;
+            }
+        }
+
+        //        var chartMM = [];
+
+        function orderBar_Click(dv, d, i) {
+            if ($('#collapse' + d + '_Chart').hasClass('in') == false) {
+                $('#collapse' + d + '_Cards').collapse('hide');
+                $('#collapse' + d + '_Chart').collapse('show');
+            }
+//            collapse_ChartV[d].xAxis[0].setExtremes(i, i + 14);
+//            if ($('#collapse' + d + '_Chart').hasClass('in') == true) {
+//                if (chartMM[d] == collapse_ChartV[d].xAxis[0].min + '/' + collapse_ChartV[d].xAxis[0].max) {
+//                    $('#collapse' + d + '_Chart').collapse('hide');
+//                }
+//            }
+//            chartMM[d] = collapse_ChartV[d].xAxis[0].min + '/' + collapse_ChartV[d].xAxis[0].max;
+//            log(chartMM[d]);
+        }
+
+        function cards_flipper(event) {
+//            log('cards_flipper>>>>>>>>>>>>>>>');
+            var dv = event;
+//            log(dv.id);
+//            log(event.id);
+//            log(event);
+//            log(event.parentElement);
+            event.classList.toggle('flipped');
+//            log(event.id);
+            var day = parseInt(event.id.split("collapse")[1]);
+            for (var i = 1; i <= 12; i++) {
+                var dv = document.getElementById("collapse" + day + "_Cards" + i + "F");
+                dv.setAttribute("ondrop", "");
+                dv.setAttribute("ondragover", "");
+//                log(dv);
+            }
+//            log(event);
+            if (!$(event).hasClass('flipped')) {
+//                log('flipped');
+                var dv = document.getElementById(event.id + "F");
+                dv.setAttribute("ondrop", "mpDrop(event)");
+                dv.setAttribute("ondragover", "allowDrop(event)");
+                tableMold_innerHTML();
+//                document.getElementById('moldTable').style.visible = 'visible';
+                document.getElementById('A2').style.display = 'block';
+                document.getElementById('A3').style.display = 'block';
+//                $('moldTable').show();
+            } else {
+//                document.getElementById('moldTable').style.visible = 'hidden';
+                document.getElementById('A2').style.display = 'none';
+                document.getElementById('A3').style.display = 'none';
+//                $('moldTable').hide();
+            }
+//            event.setAttribute("ondragover","");
+
+        }
+
+        function collapseCards_innerHTML(_day) {
+            var pr = '<br/>' +
+                '                    <div class="row" style="height: 200px;">' +
+                '                        <div class="flip-container col-sm-3">' +
+                //                '                            <div class="flipper" onclick="this.classList.toggle(\'flipped\')">' +
+                '                            <div class="flipper flipped" onclick="cards_flipper(this)" id="collapse' + _day + '_Cards1">' +
+                '                                <div class="flip-front" style="width: 100%;" id="collapse' + _day + '_Cards1F" ondrop="mpDrop(event)" ondragover="allowDrop(event)">' +
+                '                                    <ul class="list-group" >' +
+                '                                        <li class="list-group-item active" style="padding: 5px 20px 5px 20px; text-align: center;"><b>Order</b></li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px;">...</li>' +
+                '                                    </ul>' +
+                '                                </div>' +
+                '                                <div class="flip-back" style="width: 100%;" id="collapse' + _day + '_Cards1B">' +
+                '                                    <div style="position: inherit; top: 30px; left: 0">' +
+                '                                        <img src="Common/pics/1-1.png" alt="" width="100%" height="125">' +
+                '                                    </div>' +
+                '                                    <ul class="list-group" >' +
+                '                                        <li class="list-group-item" style="background: #f0ad4e; padding: 5px 20px 5px 20px; text-align: center; color: #ffffff"><b>Description</b></li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;" >...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                    </ul>' +
+                '                                </div>' +
+                '                            </div>' +
+                '                        </div>' +
+                '                        <div class="flip-container col-sm-3">' +
+                '                            <div class="flipper flipped" onclick="cards_flipper(this)" id="collapse' + _day + '_Cards2">' +
+                '                                <div class="flip-front" style="width: 100%;" id="collapse' + _day + '_Cards2F" ondrop="mpDrop(event)" ondragover="allowDrop(event)">' +
+                '                                </div>' +
+                '                                <div class="flip-back" style="width: 100%;" id="collapse' + _day + '_Cards2B">' +
+                '                                    <div style="position: inherit; top: 30px; left: 0">' +
+                '                                        <img src="Common/pics/1-1.png" alt="" width="100%" height="125">' +
+                '                                    </div>' +
+                '                                    <ul class="list-group">' +
+                '                                        <li class="list-group-item" style="background: #f0ad4e; padding: 5px 20px 5px 20px; text-align: center; color: #ffffff"><b>Description</b></li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;" >...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                    </ul>' +
+                '                                </div>' +
+                '                            </div>' +
+                '                        </div>' +
+                '                        <div class="flip-container col-sm-3">' +
+                '                            <div class="flipper flipped" onclick="cards_flipper(this)" id="collapse' + _day + '_Cards3">' +
+                '                                <div class="flip-front" style="width: 100%;" id="collapse' + _day + '_Cards3F" ondrop="mpDrop(event)" ondragover="allowDrop(event)">' +
+                '                                </div>' +
+                '                                <div class="flip-back" style="width: 100%;" id="collapse' + _day + '_Cards3B">' +
+                '                                    <div style="position: inherit; top: 30px; left: 0">' +
+                '                                        <img src="Common/pics/1-1.png" alt="" width="100%" height="125">' +
+                '                                    </div>' +
+                '                                    <ul class="list-group">' +
+                '                                        <li class="list-group-item" style="background: #f0ad4e; padding: 5px 20px 5px 20px; text-align: center; color: #ffffff"><b>Description</b></li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;" >...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                    </ul>' +
+                '                                </div>' +
+                '                            </div>' +
+                '                        </div>' +
+                '                        <div class="flip-container col-sm-3">' +
+                '                            <div class="flipper flipped" onclick="cards_flipper(this)" id="collapse' + _day + '_Cards4">' +
+                '                                <div class="flip-front" style="width: 100%;" id="collapse' + _day + '_Cards4F" ondrop="mpDrop(event)" ondragover="allowDrop(event)">' +
+                '                                </div>' +
+                '                                <div class="flip-back" style="width: 100%;" id="collapse' + _day + '_Cards4B">' +
+                '                                    <div style="position: inherit; top: 30px; left: 0">' +
+                '                                        <img src="Common/pics/1-1.png" alt="" width="100%" height="125">' +
+                '                                    </div>' +
+                '                                    <ul class="list-group">' +
+                '                                        <li class="list-group-item" style="background: #f0ad4e; padding: 5px 20px 5px 20px; text-align: center; color: #ffffff"><b>Description</b></li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;" >...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                    </ul>' +
+                '                                </div>' +
+                '                            </div>' +
+                '                        </div>' +
+                '                    </div>' +
+                '                    <div class="row" style="height: 200px;">' +
+                '                        <div class="flip-container col-sm-3">' +
+                '                            <div class="flipper flipped" onclick="cards_flipper(this)" id="collapse' + _day + '_Cards5">' +
+                '                                <div class="flip-front" style="width: 100%;" id="collapse' + _day + '_Cards5F" ondrop="mpDrop(event)" ondragover="allowDrop(event)">' +
+                '                                </div>' +
+                '                                <div class="flip-back" style="width: 100%;" id="collapse' + _day + '_Cards5B">' +
+                '                                    <div style="position: inherit; top: 30px; left: 0">' +
+                '                                        <img src="Common/pics/1-1.png" alt="" width="100%" height="125">' +
+                '                                    </div>' +
+                '                                    <ul class="list-group">' +
+                '                                        <li class="list-group-item" style="background: #f0ad4e; padding: 5px 20px 5px 20px; text-align: center; color: #ffffff"><b>Description</b></li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;" >...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                    </ul>' +
+                '                                </div>' +
+                '                            </div>' +
+                '                        </div>' +
+                '                        <div class="flip-container col-sm-3">' +
+                '                            <div class="flipper flipped" onclick="cards_flipper(this)" id="collapse' + _day + '_Cards6">' +
+                '                                <div class="flip-front" style="width: 100%;" id="collapse' + _day + '_Cards6F" ondrop="mpDrop(event)" ondragover="allowDrop(event)">' +
+                '                                </div>' +
+                '                                <div class="flip-back" style="width: 100%;" id="collapse' + _day + '_Cards6B">' +
+                '                                    <div style="position: inherit; top: 30px; left: 0">' +
+                '                                        <img src="Common/pics/1-1.png" alt="" width="100%" height="125">' +
+                '                                    </div>' +
+                '                                    <ul class="list-group">' +
+                '                                        <li class="list-group-item" style="background: #f0ad4e; padding: 5px 20px 5px 20px; text-align: center; color: #ffffff"><b>Description</b></li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;" >...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                    </ul>' +
+                '                                </div>' +
+                '                            </div>' +
+                '                        </div>' +
+                '                        <div class="flip-container col-sm-3">' +
+                '                            <div class="flipper flipped" onclick="cards_flipper(this)" id="collapse' + _day + '_Cards7">' +
+                '                                <div class="flip-front" style="width: 100%;" id="collapse' + _day + '_Cards7F" ondrop="mpDrop(event)" ondragover="allowDrop(event)">' +
+                '                                </div>' +
+                '                                <div class="flip-back" style="width: 100%;" id="collapse' + _day + '_Cards7B">' +
+                '                                    <div style="position: inherit; top: 30px; left: 0">' +
+                '                                        <img src="Common/pics/1-1.png" alt="" width="100%" height="125">' +
+                '                                    </div>' +
+                '                                    <ul class="list-group">' +
+                '                                        <li class="list-group-item" style="background: #f0ad4e; padding: 5px 20px 5px 20px; text-align: center; color: #ffffff"><b>Description</b></li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;" >...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                    </ul>' +
+                '                                </div>' +
+                '                            </div>' +
+                '                        </div>' +
+                '                        <div class="flip-container col-sm-3">' +
+                '                            <div class="flipper flipped" onclick="cards_flipper(this)" id="collapse' + _day + '_Cards8">' +
+                '                                <div class="flip-front" style="width: 100%;" id="collapse' + _day + '_Cards8F" ondrop="mpDrop(event)" ondragover="allowDrop(event)">' +
+                '                                </div>' +
+                '                                <div class="flip-back" style="width: 100%;" id="collapse' + _day + '_Cards8B">' +
+                '                                    <div style="position: inherit; top: 30px; left: 0">' +
+                '                                        <img src="Common/pics/1-1.png" alt="" width="100%" height="125">' +
+                '                                    </div>' +
+                '                                    <ul class="list-group">' +
+                '                                        <li class="list-group-item" style="background: #f0ad4e; padding: 5px 20px 5px 20px; text-align: center; color: #ffffff"><b>Description</b></li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;" >...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                    </ul>' +
+
+                '                                </div>' +
+                '                            </div>' +
+                '                        </div>' +
+                '                    </div>' +
+                '                    <div class="row" style="height: 200px;">' +
+                '                        <div class="flip-container col-sm-3">' +
+                '                            <div class="flipper flipped" onclick="cards_flipper(this)" id="collapse' + _day + '_Cards9">' +
+                '                                <div class="flip-front" style="width: 100%;" id="collapse' + _day + '_Cards9F" ondrop="mpDrop(event)" ondragover="allowDrop(event)">' +
+                '                                </div>' +
+                '                                <div class="flip-back" style="width: 100%;" id="collapse' + _day + '_Cards9B">' +
+                '                                    <div style="position: inherit; top: 30px; left: 0">' +
+                '                                        <img src="Common/pics/1-1.png" alt="" width="100%" height="125">' +
+                '                                    </div>' +
+                '                                    <ul class="list-group">' +
+                '                                        <li class="list-group-item" style="background: #f0ad4e; padding: 5px 20px 5px 20px; text-align: center; color: #ffffff"><b>Description</b></li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;" >...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                    </ul>' +
+                '                                </div>' +
+                '                            </div>' +
+                '                        </div>' +
+                '                        <div class="flip-container col-sm-3">' +
+                '                            <div class="flipper flipped" onclick="cards_flipper(this)" id="collapse' + _day + '_Cards10">' +
+                '                                <div class="flip-front" style="width: 100%;" id="collapse' + _day + '_Cards10F" ondrop="mpDrop(event)" ondragover="allowDrop(event)">' +
+                '                                </div>' +
+                '                                <div class="flip-back" style="width: 100%;" id="collapse' + _day + '_Cards10B">' +
+                '                                    <div style="position: inherit; top: 30px; left: 0">' +
+                '                                        <img src="Common/pics/1-1.png" alt="" width="100%" height="125">' +
+                '                                    </div>' +
+                '                                    <ul class="list-group">' +
+                '                                        <li class="list-group-item" style="background: #f0ad4e; padding: 5px 20px 5px 20px; text-align: center; color: #ffffff"><b>Description</b></li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;" >...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                    </ul>' +
+                '                                </div>' +
+                '                            </div>' +
+                '                        </div>' +
+                '                        <div class="flip-container col-sm-3">' +
+                '                            <div class="flipper flipped" onclick="cards_flipper(this)" id="collapse' + _day + '_Cards11">' +
+                '                                <div class="flip-front" style="width: 100%;" id="collapse' + _day + '_Cards11F" ondrop="mpDrop(event)" ondragover="allowDrop(event)">' +
+                '                                </div>' +
+                '                                <div class="flip-back" style="width: 100%;" id="collapse' + _day + '_Cards11B">' +
+                '                                    <div style="position: inherit; top: 30px; left: 0">' +
+                '                                        <img src="Common/pics/1-1.png" alt="" width="100%" height="125">' +
+                '                                    </div>' +
+                '                                    <ul class="list-group">' +
+                '                                        <li class="list-group-item" style="background: #f0ad4e; padding: 5px 20px 5px 20px; text-align: center; color: #ffffff"><b>Description</b></li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;" >...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                    </ul>' +
+                '                                </div>' +
+                '                            </div>' +
+                '                        </div>' +
+                '                        <div class="flip-container col-sm-3">' +
+                '                            <div class="flipper flipped" onclick="cards_flipper(this)" id="collapse' + _day + '_Cards12">' +
+                '                                <div class="flip-front" style="width: 100%;" id="collapse' + _day + '_Cards12F" ondrop="mpDrop(event)" ondragover="allowDrop(event)">' +
+                '                                </div>' +
+                '                                <div class="flip-back" style="width: 100%;" id="collapse' + _day + '_Cards12B">' +
+                '                                    <div style="position: inherit; top: 30px; left: 0">' +
+                '                                        <img src="Common/pics/1-1.png" alt="" width="100%" height="125">' +
+                '                                    </div>' +
+                '                                    <ul class="list-group">' +
+                '                                        <li class="list-group-item" style="background: #f0ad4e; padding: 5px 20px 5px 20px; text-align: center; color: #ffffff"><b>Description</b></li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;" >...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                        <li class="list-group-item" style="padding: 5px 20px 5px 20px; opacity: 0.95;">...</li>' +
+                '                                    </ul>' +
+                '                                </div>' +
+                '                            </div>' +
+                '                        </div>' +
+                '                    </div>';
+            document.getElementById('collapse' + _day + '_Cards').innerHTML = pr;
+        }
+
+        function tableMold_innerHTML(pn) {
+//            log('tableMold_innerHTML');
+            var pr = '<thead><tr><th></th><th>Mold</th></tr></thead><tbody>';
+            var rr = [];
+            var r = Math.round(picsList.length * Math.random());
+            for (var i = 0; i < 20; i++) {
+                do {
+                    var _exit = true;
+                    r = Math.round(picsList.length * Math.random());
+                    $.each(rr, function (i, _r) {
+                        if (_r == r) {
+                            _exit = false;
+                        }
+                    });
+                } while (!_exit);
+                rr.push(r);
+                var mold = 'M' + (1000000 + Math.round(9000000 * Math.random())) + '/' + (100 + 10 * Math.round(100 * Math.random())) + '/' + r;
+//                log('pics==>>  https://www.bing.com/az/hprichbg/rb/' + picsList[r]);
+                pr = pr +
+                    '<tr>' +
+                    '<td><img src="http://cdn.nanxiongnandi.com/bing/' +
+                    picsList[r] +
+                    '" class="img-rounded"  height="60" id="' +
+                    mold +
+                    '" ondrag="moldDarg(event)" draggable="true"></td>' +
+                    '<td>' +
+                    mold.split("/")[0] +
+                    '<br/>' +
+                    mold.split("/")[1] +
+                    '<br/>' +
+                    'per hour' +
+                    '</td></tr>';
+            }
+//            log('');
+//            log(rr);
+            pr = pr + '</tbody>';
+            document.getElementById('moldTable').innerHTML = pr;
+        }
+
+        function tablePress_innerHTML(mold) {
+            var pr = '<thead><tr><th></th><th>Press</th></tr></thead><tbody>';
+            var rr = [];
+            var r = Math.round(picsList.length * Math.random());
+
+            for (var i = 0; i < 10; i++) {
+                do {
+                    var _exit = true;
+                    r = Math.round(picsList.length * Math.random());
+                    $.each(rr, function (i, _r) {
+                        if (_r == r) {
+                            _exit = false;
+                        }
+                    });
+                } while (!_exit);
+                rr.push(r);
+
+//                log(rr);
+                var press = 'P' + (1000 + Math.round(9000 * Math.random())) + '/------';
+                pr = pr +
+                    '<tr>' +
+                    '<td><img src="http://cdn.nanxiongnandi.com/bing/' +
+                    picsList[r] +
+                    '" class="img-rounded"  height="60" id="' +
+                    press +
+                    '" ondrag="pressDarg(event)" draggable="true"></td>' +
+                    '<td>' +
+                    press.split("/")[0] +
+                    '<br/>' +
+                    press.split("/")[1] +
+                    '</td></tr>';
+            }
+//            log(rr);
+            pr = pr + '</tbody>';
+//            log(pr);
+            document.getElementById('pressTable').innerHTML = pr;
+        }
+
+        var chartColors = [
+            '#7cb5ec',
+            '#434348',
+            '#90ed7d',
+            '#f7a35c',
+            '#8085e9',
+            '#f15c80',
+            '#e4d354',
+            '#2B9091',
+            '#f45b5b',
+            '#91e8e1'
+        ]
+
+        function moldDarg(e) {
+//            log('moldDarg');
+//            log(e);
+//            log('dragging: ' + e.target.id);
+            dragID = 'moldDarg:' + e.target.id;
+//            log('moldDarg: '+dragID);
+        }
+
+        function pressDarg(e) {
+//            log('moldDarg');
+//            log('dragging: ' + e.target.id);
+            dragID = 'pressDarg:' + e.target.id;
+        }
+
+
+        function mpDrop(event) {
+            var pp = event.target.parentElement.parentElement;
+            var id = pp.id;
+            var day, card, chart;
+//            log('mpDrop::: ' + dragID);
+            if (id != null) {
+                if (dragID.split(":")[0] == "moldDarg") {
+
+                    day = parseInt(id.split("collapse")[1]);
+                    card = parseInt(id.split("Cards")[1]);
+                    chart = collapse_ChartV[parseInt(id.split("collapse")[1])];
+                    chart.xAxis[2].categories[card + Math.round(collapse_ChartV[day].series[0].xAxis.min) - 1] = dragID.split(":")[1];
+//                    log('chart.xAxis[2].categories::: ' + chart.xAxis[2].categories[card + collapse_ChartV[day].series[0].xAxis.min - 1]);
+
+                    var data = [];
+                    $.each(chart.series[0].data, function (i, _data) {
+                        data.push([_data.low, _data.high]);
+                    });
+                    var pn = chart.xAxis[1].categories[card + Math.round(collapse_ChartV[day].series[0].xAxis.min) - 1];
+                    //                    var pn = (100000 + Math.round(900000 * Math.random())) + '/' + (100 + 100 * Math.round(100 * Math.random()));
+                    var pm = chart.xAxis[2].categories[card + Math.round(collapse_ChartV[day].series[0].xAxis.min) - 1];
+
+                    var ss = 5 * Math.round(parseInt(pn.split("/")[1]) / parseInt(pm.split("/")[1]) * 12);
+                    if (ss > 1440) ss = 1440;
+                    var s0 = (1440 - ss) * Math.random();
+                    data[card + Math.round(collapse_ChartV[day].series[0].xAxis.min) - 1] = [s0, s0 + ss];
+                    chart.series[0].update({
+                        data: data
+                    }, true);
+                    tablePress_innerHTML();
+
+                } else if (dragID.split(":")[0] == "pressDarg") {
+                    day = parseInt(id.split("collapse")[1]);
+                    card = parseInt(id.split("Cards")[1]);
+                    chart = collapse_ChartV[parseInt(id.split("collapse")[1])];
+                    chart.xAxis[3].categories[card + collapse_ChartV[day].series[0].xAxis.min - 1] = dragID.split(":")[1];
+                }
+
+                dayCard_innerHTML(day, card, 'F');
+                dayCard_innerHTML(day, card, 'B');
+
+            }
+        }
+
+        function allowDrop(event) {
+            event.preventDefault();
+        }
+
+        var dragID = '';
+
+
+    </script>
+</head>
+
+<body>
+
+<nav class="navbar" id="navbarH" style="display: none">
+    <div class="container-fluid">
+        <div>
+            <div class="collapse navbar-collapse ">
+                <ul class="nav navbar-nav" id="sectionX">
+                    <li><a href="#section(x)">day(x)</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div id="wrapper">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="schedule.html">RTS Scheduling</a>
+        </div>
+        <!-- /.navbar-header -->
+
+        <ul class="nav navbar-top-links navbar-right">
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-envelope fa-fw"></i> <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-messages">
+                    <li>
+                        <a href="#">
+                            <div>
+                                <strong>John Smith</strong>
+                                <span class="pull-right text-muted">
+                                        <em>Yesterday</em>
+                                    </span>
+                            </div>
+                            <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...</div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <strong>John Smith</strong>
+                                <span class="pull-right text-muted">
+                                        <em>Yesterday</em>
+                                    </span>
+                            </div>
+                            <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...</div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <strong>John Smith</strong>
+                                <span class="pull-right text-muted">
+                                        <em>Yesterday</em>
+                                    </span>
+                            </div>
+                            <div>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eleifend...</div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a class="text-center" href="#">
+                            <strong>Read All Messages</strong>
+                            <i class="fa fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+                <!-- /.dropdown-messages -->
+            </li>
+            <!-- /.dropdown -->
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-tasks fa-fw"></i> <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-tasks">
+                    <li>
+                        <a href="#">
+                            <div>
+                                <p>
+                                    <strong>Task 1</strong>
+                                    <span class="pull-right text-muted">40% Complete</span>
+                                </p>
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40"
+                                         aria-valuemin="0" aria-valuemax="100"
+                                         style="width: 40%">
+                                        <span class="sr-only">40% Complete (success)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <p>
+                                    <strong>Task 2</strong>
+                                    <span class="pull-right text-muted">20% Complete</span>
+                                </p>
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="20"
+                                         aria-valuemin="0" aria-valuemax="100"
+                                         style="width: 20%">
+                                        <span class="sr-only">20% Complete</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <p>
+                                    <strong>Task 3</strong>
+                                    <span class="pull-right text-muted">60% Complete</span>
+                                </p>
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="60"
+                                         aria-valuemin="0" aria-valuemax="100"
+                                         style="width: 60%">
+                                        <span class="sr-only">60% Complete (warning)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <p>
+                                    <strong>Task 4</strong>
+                                    <span class="pull-right text-muted">80% Complete</span>
+                                </p>
+                                <div class="progress progress-striped active">
+                                    <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="80"
+                                         aria-valuemin="0" aria-valuemax="100"
+                                         style="width: 80%">
+                                        <span class="sr-only">80% Complete (danger)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a class="text-center" href="#">
+                            <strong>See All Tasks</strong>
+                            <i class="fa fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+                <!-- /.dropdown-tasks -->
+            </li>
+            <!-- /.dropdown -->
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-bell fa-fw"></i> <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-alerts">
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-comment fa-fw"></i> New Comment
+                                <span class="pull-right text-muted small">4 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-twitter fa-fw"></i> 3 New Followers
+                                <span class="pull-right text-muted small">12 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-envelope fa-fw"></i> Message Sent
+                                <span class="pull-right text-muted small">4 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-tasks fa-fw"></i> New Task
+                                <span class="pull-right text-muted small">4 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a href="#">
+                            <div>
+                                <i class="fa fa-upload fa-fw"></i> Server Rebooted
+                                <span class="pull-right text-muted small">4 minutes ago</span>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="divider"></li>
+                    <li>
+                        <a class="text-center" href="#">
+                            <strong>See All Alerts</strong>
+                            <i class="fa fa-angle-right"></i>
+                        </a>
+                    </li>
+                </ul>
+                <!-- /.dropdown-alerts -->
+            </li>
+            <!-- /.dropdown -->
+            <li class="dropdown">
+                <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <i class="fa fa-user fa-fw"></i> <i class="fa fa-caret-down"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-user">
+                    <li><a href="#"><i class="fa fa-user fa-fw"></i> User Profile</a>
+                    </li>
+                    <li><a href="#"><i class="fa fa-gear fa-fw"></i> Settings</a>
+                    </li>
+                    <li class="divider"></li>
+                    <li><a href="login.html"><i class="fa fa-sign-out fa-fw"></i> Logout</a>
+                    </li>
+                </ul>
+                <!-- /.dropdown-user -->
+            </li>
+            <!-- /.dropdown -->
+        </ul>
+        <!-- /.navbar-top-links -->
+
+        <div class="navbar-default sidebar" role="navigation">
+            <div class="sidebar-nav navbar-collapse">
+                <ul class="nav" id="side-menu">
+
+                    <li class="sidebar-search">
+                        <div class="input-group custom-search-form">
+                            <input type="text" class="form-control" placeholder="Search...">
+                            <span class="input-group-btn">
+                                <button class="btn btn-default" type="button">
+                                    <i class="fa fa-search"></i>
+                                </button>
+                            </span>
+                        </div>
+                        <!-- /input-group -->
+                    </li>
+
+                    <!--<li>-->
+                    <!--<a href="index.html"><i class="fa fa-dashboard fa-fw"></i>Dashboard</a>-->
+                    <!--</li>-->
+
+                    <li>
+                        <a href="#"><i class="fa fa-calendar fa-fw"></i>Calendar<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+
+                            <div class="calendarPAD" id="calendarPAD"
+                                 style=" width: 230px; position: relative;margin: 20px auto"></div>
+
+                        </ul>
+                        <!-- /.nav-second-level -->
+                    </li>
+
+                    <!--<li>-->
+                    <!--<a href="schedule.html"><i class="fa  fa-calendar  fa-fw"></i>Schedule</a>-->
+                    <!--</li>-->
+
+                    <li>
+                        <a href="#"><i class="fa fa-dashboard fa-fw"></i>DashBoard<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="dashboard.html">dashboard I.</a>
+                            </li>
+                            <li>
+                                <a href="dashboard.html">dashboard II.</a>
+                            </li>
+                            <li>
+                                <a href="dashboard.html">dashboard III.</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-table fa-fw"></i>Tables<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="tables.html">Tables I.</a>
+                            </li>
+                            <li>
+                                <a href="tables.html">Tables II.</a>
+                            </li>
+                            <li>
+                                <a href="tables.html">Tables III.</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#"><i class="fa fa-edit fa-fw"></i>Reports<span class="fa arrow"></span></a>
+                        <ul class="nav nav-second-level">
+                            <li>
+                                <a href="reports.html">Reports I.</a>
+                            </li>
+                            <li>
+                                <a href="reports.html">Reports II.</a>
+                            </li>
+                            <li>
+                                <a href="reports.html">Reports III.</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <!--<li>-->
+                    <!--<a href="#"><i class="fa fa-wrench fa-fw"></i> UI Elements<span class="fa arrow"></span></a>-->
+                    <!--<ul class="nav nav-second-level">-->
+                    <!--<li>-->
+                    <!--<a href="panels-wells.html">Panels and Wells</a>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                    <!--<a href="buttons.html">Buttons</a>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                    <!--<a href="notifications.html">Notifications</a>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                    <!--<a href="typography.html">Typography</a>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                    <!--<a href="icons.html"> Icons</a>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                    <!--<a href="grid.html">Grid</a>-->
+                    <!--</li>-->
+                    <!--</ul>-->
+                    <!--&lt;!&ndash; /.nav-second-level &ndash;&gt;-->
+                    <!--</li>-->
+                    <!--<li>-->
+                    <!--<a href="#"><i class="fa fa-sitemap fa-fw"></i> Multi-Level Dropdown<span class="fa arrow"></span></a>-->
+                    <!--<ul class="nav nav-second-level">-->
+                    <!--<li>-->
+                    <!--<a href="#">Second Level Item</a>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                    <!--<a href="#">Second Level Item</a>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                    <!--<a href="#">Third Level <span class="fa arrow"></span></a>-->
+                    <!--<ul class="nav nav-third-level">-->
+                    <!--<li>-->
+                    <!--<a href="#">Third Level Item</a>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                    <!--<a href="#">Third Level Item</a>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                    <!--<a href="#">Third Level Item</a>-->
+                    <!--</li>-->
+                    <!--<li>-->
+                    <!--<a href="#">Third Level Item</a>-->
+                    <!--<ul class="nav nav-fourth-level">-->
+                    <!--fff-->
+                    <!--</ul>-->
+                    <!--</li>-->
+                    <!--</ul>-->
+                    <!--&lt;!&ndash; /.nav-third-level &ndash;&gt;-->
+                    <!--</li>-->
+                    <!--</ul>-->
+                    <!--&lt;!&ndash; /.nav-second-level &ndash;&gt;-->
+                    <!--</li>-->
+                    <!--<li>-->
+                    <!--&lt;!&ndash;<a href="#"><i class="fa fa-calendar fa-fw"></i>Calendar<span class="fa arrow"></span></a>&ndash;&gt;-->
+                    <!--<a href="#"><i class="fa fa-sitemap fa-fw"></i> Molds and Press<span class="fa arrow"></span></a>-->
+                    <!--<ul class="nav ">-->
+                    <!--<li>-->
+                    <!--<a href="blank.html">Blank Page</a>-->
+                    <!--&lt;!&ndash;<div id="A2" class="panel panel-default" style="display: block; shadow:0; position: relative; width: 100%;  overflow-y: auto;"&ndash;&gt;-->
+                    <!--&lt;!&ndash;ondrop="mpDrop(event)" ondragover="allowDrop(event)">&ndash;&gt;-->
+                    <!--&lt;!&ndash;<table id="moldTable" class="table" style="position: inherit; ">&ndash;&gt;-->
+                    <!--&lt;!&ndash;<thead>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<tr>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<th></th>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<th>Mold</th>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</tr>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</thead>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<tbody>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<tr>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<td></td>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<td>M111111111</td>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</tr>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</tbody>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</table>&ndash;&gt;-->
+
+                    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+                    <!--</li>-->
+                    <!--<li>-->
+                    <!--<a href="login.html">Login Page</a>-->
+                    <!--&lt;!&ndash;<div id="A3" class="panel panel-default" style="display: block; shadow:0; position: relative;  width: 100%; overflow-y: auto;"&ndash;&gt;-->
+                    <!--&lt;!&ndash;ondrop="mpDrop(event)" ondragover="allowDrop(event)">&ndash;&gt;-->
+                    <!--&lt;!&ndash;<table id="pressTable" class="table" style="position: inherit; ">&ndash;&gt;-->
+                    <!--&lt;!&ndash;<thead>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<tr>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<th></th>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<th>Press</th>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</tr>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</thead>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<tbody>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<tr>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<td></td>&ndash;&gt;-->
+                    <!--&lt;!&ndash;<td>P1111111111</td>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</tr>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</tbody>&ndash;&gt;-->
+                    <!--&lt;!&ndash;</table>&ndash;&gt;-->
+
+                    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+                    <!--</li>-->
+                    <!--</ul>-->
+                    <!--&lt;!&ndash; /.nav-second-level &ndash;&gt;-->
+                    <!--</li>-->
+                </ul>
+            </div>
+            <!-- /.sidebar-collapse -->
+        </div>
+        <!-- /.navbar-static-side -->
+    </nav>
+
+    <div id="page-wrapper1">
+        <!--<div class="row">-->
+        <!--<div class="col-lg-12">-->
+        <!--<h1 class="page-header">Dashboard</h1>-->
+        <!--</div>-->
+        <!--</div>-->
+        <div class="row">
+            <div id="MonthlyCalendar" class="col-sm-10" style="position: relative;   height: 90vh; overflow-x: hidden;">
+
+                <div id="section1">
+                    <div id='dayOrderX1' class="row" style="margin: 10px 0px 0px 0px; padding: 10px 0 0 0;">
+                        <a data-toggle="collapse" data-parent="#collapse1" href="#collapse1_Cards">
+                            <div class="progress-bar" role="progressbar"
+                                 style="font-size:14px; border-radius: 3px; width:150px; margin: 0px 10px 0px 20px;">
+                                <i class="fa fa-calendar-check-o  fa-1x" style="width: 30px"></i><b>Sun, August 1</b>
+                            </div>
+                        </a>
+                        <div id="progress1" style="overflow-x: auto; ">
+                            <a data-toggle="collapse" data-parent="#collapse1" href="#collapse1_Chart"
+                               style="background: #7cb5ec">
+                                <div class="progress"
+                                     style="width:1900px; margin: 0px 0px 0px 0px; padding: 0 0 0 0; background: #ccc">
+                                    <div class="progress-bar " role="progressbar" style="width:100px; background: #ddd;"
+                                         onclick="orderBar_Click(1,1)">
+                                        1 - ACBD111111111
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!--<hr/>-->
+
+                    <div id="collapse1" style="margin: -15px 0 0 0">
+
+                        <div class="panel panel-default" style="border:0; box-shadow: none;"></div>
+
+                        <div class="panel" style="border:0; box-shadow: none;">
+                            <div id="collapse1_Chart" class="panel collapse"
+                                 style="height:600px; margin: 0 0 0 0px;"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-sm-2" style="position: relative;  height: 90vh; overflow-x: hidden; ">
+                <ul class="nav ">
+
+                    <!--<li>-->
+                    <!--<a href="blank.html">Blank Page</a>-->
+                    <div id="A2" class="panel panel-default"
+                         style="display: none; shadow:0; position: relative; top: 2vh; width: 100%; height: 50vh; overflow-y: auto;"
+                         ondrop="mpDrop(event)" ondragover="allowDrop(event)">
+                        <table id="moldTable" class="table" style="position: inherit; ">
+                            <!--<thead>-->
+                            <!--<tr>-->
+                            <!--<th></th>-->
+                            <!--<th></th>-->
+                            <!--</tr>-->
+                            <!--</thead>-->
+                            <!--<tbody>-->
+                            <!--<tr>-->
+                            <!--<td></td>-->
+                            <!--<td></td>-->
+                            <!--</tr>-->
+                            <!--</tbody>-->
+                        </table>
+
+                    </div>
+                    <!--</li>-->
+
+                    <!--<li class="divider"></li>-->
+
+                    <!--<li>-->
+                    <!--<a href="login.html">Login Page</a>-->
+                    <div id="A3" class="panel panel-default"
+                         style="display: none; shadow:0; position: relative;  width: 100%;top: 1vh; height: 35vh; overflow-y: auto;"
+                         ondrop="mpDrop(event)" ondragover="allowDrop(event)">
+                        <table id="pressTable" class="table" style="position: inherit; ">
+                            <!--<thead>-->
+                            <!--<tr>-->
+                            <!--<th></th>-->
+                            <!--<th></th>-->
+                            <!--</tr>-->
+                            <!--</thead>-->
+                            <!--<tbody>-->
+                            <!--<tr>-->
+                            <!--<td></td>-->
+                            <!--<td></td>-->
+                            <!--</tr>-->
+                            <!--</tbody>-->
+                        </table>
+
+                    </div>
+                    <!--</li>-->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+</body>
+
+</html>

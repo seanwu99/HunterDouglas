@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>oee dashboard</title>
+    <meta charset="utf-8">
+    <script id="sap-ui-bootstrap"
+            src="https://sapui5.netweaver.ondemand.com/resources/sap-ui-core.js"
+            data-sap-ui-theme="sap_belize"
+            data-sap-ui-libs="sap.ui.core,sap.ui.commons,sap.ui.table,sap.ui.ux3"
+            data-sap-ui-language="en">
+    </script>
+    <script src="Common/highcharts/highstock.js"></script>
+    <script src="Common/highcharts/highcharts-3d.js"></script>
+    <link href="Common/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <link href="Common/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <script src="Common/bootstrap/js/bootstrap.min.js"></script>
+    <link href="Common/rts/OEEM/oeeDashboard.css" rel="stylesheet">
+    <script src="Common/rts/OEEM/oeeDashboard.js"></script>
+    <script src="Common/three/three.js"></script>
+    <script>
+        var SECs = 0;
+        var ms1000 = new Date();
+        var rtsOEEM = {
+            availability: 85,
+            performance: 85,
+            quality: 85,
+            productCurrent: 0,
+            productTarget: 5555,
+            downtime: false,
+            downtimeCurrent: 0,
+            downtimeTotal: 0,
+            bigLossFilter: 90,
+            sblEquipmentFailure: {
+                title: 'Equipment Failure',
+                occurrences: 0,
+                totalizer: 0,
+                rate: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            sblSetupAndAdjustments: {
+                title: 'Setup and Adjustments',
+                occurrences: 0,
+                totalizer: 0,
+                rate: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            sblIdlingAndMinorStops: {
+                title: 'Idling and Minor Stops',
+                occurrences: 0,
+                totalizer: 0,
+                rate: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            sblReducedSpeed: {
+                title: 'Reduced Speed',
+                occurrences: 0,
+                totalizer: 0,
+                rate: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            sblProcessDefects: {
+                title: 'Process Defects',
+                occurrences: 0,
+                totalizer: 0,
+                rate: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            sblReducedYield: {
+                title: 'Reduced Yield',
+                occurrences: 0,
+                totalizer: 0,
+                rate: [0, 0, 0, 0, 0, 0, 0, 0, 0]
+            },
+            events: [
+                {reason: '', occurrences: 0, totalizer: 0},
+            ]
+        };
+
+        $(function () {
+            chartOeeTrendInit("Oee Trend", null);             //title & series, random data if null
+            chartSixBigLossesInit("Six Big Losses", null);    //title & series, random data if null
+            chartEventsInit("Downtime Events", null);         //title & series, random data if null
+            chartFloorMapInit('Floor Maps', null);            //title & series, random data if null
+            sblChartsInit();
+            pageRefresh();
+
+        });
+
+        window.requestAnimFrame = (function () {
+            return window.requestAnimationFrame ||
+                window.webkitRequestAnimationFrame ||
+                window.mozRequestAnimationFrame ||
+                function (callback) {
+                    window.setTimeout(callback, 1000 / 60);
+                };
+        })();
+
+        function pageRefresh() {
+            requestAnimFrame(pageRefresh);
+            refresh();
+        }
+
+        function refresh() {
+            cc('refresh');
+            if (new Date() - ms1000 < 1000) {
+                return;
+            } else {
+                SECs++;
+                ms1000 = new Date();
+            }
+//            console.log(SECs);
+
+            panelOEE(85 + Math.round((Math.random() * 14)), 85 + Math.round((Math.random() * 14)), 85 + Math.round((Math.random() * 14)));  //availability%, performance%, quality%
+            panelTarget(Math.round((Math.random() * 10)));  //new parts
+            panelDowntime();
+
+            if (SECs % 15 == 0)
+                simulateTarget();
+
+            if (SECs % 3 == 0)
+                chartOeeTrendRefresh();
+
+            if (SECs % 2 == 0)
+                chartSixBigLossesRefresh(rtsOEEM.bigLossFilter); // %
+
+            if (SECs % 2 == 0)
+                panelSixBigLossesRefresh();
+
+            if (SECs % 3 == 0)
+                chartFloorMapReafresh();    //mock
+
+        }
+
+        //        setInterval(function () {
+        //            TICK++;
+        //            panelOEE(85 + Math.round((Math.random() * 14)), 85 + Math.round((Math.random() * 14)), 85 + Math.round((Math.random() * 14)));  //availability%, performance%, quality%
+        //            simulateTarget();
+        //            panelTarget(Math.round((Math.random() * 10)));  //new parts
+        //            panelDowntime();
+        //            chartOeeTrendRefresh();
+        //            chartSixBigLossesRefresh(rtsOEEM.bigLossFilter); // %
+        //            panelSixBigLossesRefresh();
+        //            chartFloorMapReafresh();    //mock
+        //        }, 3000);
+
+        function chartFloorMapReafresh() {
+
+            var ele = document.getElementsByClassName("highcharts-Pad80x50-box");
+            $.each(ele, function (i, e) {
+                var rdm = Math.random();
+                if (rdm < .85) {
+                    e.setAttribute("fill", '#337ab7');
+                } else if (rdm >= .85 && rdm < .95) {
+                    e.setAttribute("fill", '#ffbc00');
+                } else if (rdm >= .95) {
+                    e.setAttribute("fill", '#d9534f');
+                }
+            });
+
+        }
+
+        function panelSixBigLossesRefresh() {
+            var
+                c1 = Math.round(10 + (Math.random() * 100)),
+                c2 = Math.round(10 + (Math.random() * 100)),
+                c3 = Math.round(10 + (Math.random() * 100)),
+                c4 = Math.round(10 + (Math.random() * 100)),
+                c5 = Math.round(10 + (Math.random() * 100)),
+                c6 = Math.round(10 + (Math.random() * 100)),
+                t1 = Math.round(Math.random() * 5000),
+                t2 = Math.round(Math.random() * 5000),
+                t3 = Math.round(Math.random() * 5000),
+                t4 = Math.round(Math.random() * 5000),
+                t5 = Math.round(Math.random() * 5000),
+                t6 = Math.round(Math.random() * 5000),
+                t = t1 + t2 + t3 + t4 + t5 + t6;
+            sblEquipmentFailure((100 * t1 / t) | 0, c1, t1);       //new rate%, Occurrences, Totalizer(sec)
+            sblSetupAndAdjustments((100 * t2 / t) | 0, c2, t2);    //new rate%, Occurrences, Totalizer(sec)
+            sblIdlingAndMinorStops((100 * t3 / t) | 0, c3, t3);    //new rate%, Occurrences, Totalizer(sec)
+            sblReducedSpeed((100 * t4 / t) | 0, c4, t4);           //new rate%, Occurrences, Totalizer(sec)
+            sblProcessDefects((100 * t5 / t) | 0, c5, t5);         //new rate%, Occurrences, Totalizer(sec)
+            sblReducedYield((100 * t6 / t) | 0, c6, t6);           //new rate%, Occurrences, Totalizer(sec)
+        }
+
+        function chartSixBigLossesRefresh(filter) {
+            var chartSeries = [
+                rtsOEEM.sblEquipmentFailure.rate[rtsOEEM.sblEquipmentFailure.rate.length - 1],
+                rtsOEEM.sblSetupAndAdjustments.rate[rtsOEEM.sblSetupAndAdjustments.rate.length - 1],
+                rtsOEEM.sblIdlingAndMinorStops.rate[rtsOEEM.sblIdlingAndMinorStops.rate.length - 1],
+                rtsOEEM.sblReducedSpeed.rate[rtsOEEM.sblReducedSpeed.rate.length - 1],
+                rtsOEEM.sblProcessDefects.rate[rtsOEEM.sblProcessDefects.rate.length - 1],
+                rtsOEEM.sblReducedYield.rate[rtsOEEM.sblReducedYield.rate.length - 1],
+            ];
+
+            var chartCategories = [
+                rtsOEEM.sblEquipmentFailure.title,
+                rtsOEEM.sblSetupAndAdjustments.title,
+                rtsOEEM.sblIdlingAndMinorStops.title,
+                rtsOEEM.sblReducedSpeed.title,
+                rtsOEEM.sblProcessDefects.title,
+                rtsOEEM.sblReducedYield.title,
+            ];
+
+            for (var i = 0; i < 5; i++) {
+                for (var j = i + 1; j < 6; j++) {
+                    if (chartSeries[i] < chartSeries[j]) {
+                        var t1 = chartSeries[i];
+                        chartSeries[i] = chartSeries[j];
+                        chartSeries[j] = t1;
+                        var t2 = chartCategories[i];
+                        chartCategories[i] = chartCategories[j];
+                        chartCategories[j] = t2;
+                    }
+                }
+            }
+            var chartSeries2 = [];
+            var chartSeries3 = [];
+
+            var g = 0;
+            for (var n = 0; n < chartSeries.length; n++) {
+                g = g + chartSeries[n];
+                chartSeries2.push(chartSeries[n]);
+                chartSeries3.push(g);
+                if (g > filter) {
+                    n = 100;
+                }
+            }
+
+            chartSixBigLosses.series[0].setData(chartSeries2);
+            chartSixBigLosses.series[1].setData(chartSeries3);
+            chartSixBigLosses.series[2].setData([{
+                name: chartCategories[0],
+                y: chartSeries[0]
+            }, {
+                name: chartCategories[1],
+                y: chartSeries[1]
+            }, {
+                name: chartCategories[2],
+                y: chartSeries[2]
+            }, {
+                name: chartCategories[3],
+                y: chartSeries[3]
+            }, {
+                name: chartCategories[4],
+                y: chartSeries[4]
+            }, {
+                name: chartCategories[5],
+                y: chartSeries[5]
+            }]);
+            chartSixBigLosses.xAxis[0].setCategories(chartCategories);
+        }
+
+        function panelOEE(availability, performance, quality) {
+
+            rtsOEEM.availability = availability;
+            rtsOEEM.performance = performance;
+            rtsOEEM.quality = quality;
+            document.getElementById('panelOEE').innerHTML = ((availability * performance * quality / 10000) | 0) + "%";
+            document.getElementById('panelAvailability').innerHTML = availability + "%";
+            document.getElementById('panelPerformance').innerHTML = performance + "%";
+            document.getElementById('panelQuality').innerHTML = quality + "%";
+        }
+
+        function chartOeeTrendRefresh() {
+            var ts = new Date().getTime();
+            chartOeeTrend.series[1].addPoint([ts, rtsOEEM.availability], false, false);
+            chartOeeTrend.series[2].addPoint([ts, rtsOEEM.performance], false, false);
+            chartOeeTrend.series[3].addPoint([ts, rtsOEEM.quality], false, false);
+            chartOeeTrend.series[0].addPoint([ts, rtsOEEM.availability * rtsOEEM.performance * rtsOEEM.quality / 10000], true, false);
+        }
+
+        function simulateTarget() {
+            rtsOEEM.downtime = !rtsOEEM.downtime;
+            if (rtsOEEM.downtime) {
+                rtsOEEM.downtimeCurrent = new Date().getTime();
+            } else {
+                rtsOEEM.downtimeTotal += (new Date().getTime() - rtsOEEM.downtimeCurrent);
+            }
+        }
+
+        function panelDowntime() {
+            if (!rtsOEEM.downtime) {
+                document.getElementById("DowntimeIcon").className = "fa fa-spinner fa-4x fa-fw";
+                document.getElementById('Downtime').innerHTML = "Downtime: " +
+                    (new Date(0)).toISOString().substr(11, 8) +
+                    " / " +
+                    (new Date(rtsOEEM.downtimeTotal)).toISOString().substr(11, 8);
+            } else {
+                document.getElementById("DowntimeIcon").className = "fa fa-spinner fa-pulse fa-4x fa-fw";
+                document.getElementById('Downtime').innerHTML = "Downtime: " +
+                    (new Date((new Date().getTime() - rtsOEEM.downtimeCurrent))).toISOString().substr(11, 8) +
+                    " / " +
+                    (new Date(rtsOEEM.downtimeTotal)).toISOString().substr(11, 8);
+            }
+        }
+
+        function panelTarget(parts) {
+            if (!rtsOEEM.downtime) {
+                rtsOEEM.productCurrent += parts;
+                document.getElementById('TargetIcon').className = "fa fa-cog fa-spin fa-4x";
+                document.getElementById("TargetColor").className = "panel panel-green";
+            } else {
+                document.getElementById('TargetIcon').className = "fa fa-cog fa-4x";
+                document.getElementById("TargetColor").className = "panel panel-red";
+            }
+            document.getElementById('Target').innerHTML = "<div class=\"huge\">Target: " + rtsOEEM.productCurrent + " / " + rtsOEEM.productTarget + "</div>";
+        }
+
+    </script>
+</head>
+
+
+<body>
+
+<hr/>
+
+
+<div class="container">
+    <hr/>
+
+    <div class="row" >
+        <div class="col-md-3">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-3">
+                            <i class="fa fa-cogs  fa-5x"></i>
+                        </div>
+                        <div class="col-xs-9 text-right">
+                            <div id="panelOEE" class="huge">%</div>
+                            <div>OEE</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="rating">
+                        <input type="radio" id="OEEstar5" name="OEErating" value="5"/><label for="OEEstar5"
+                                                                                             title="5 out of 5">5
+                        stars</label>
+                        <input type="radio" id="OEEstar4" name="OEErating" value="4"/><label for="OEEstar4"
+                                                                                             title="4 out of 5">4
+                        stars</label>
+                        <input type="radio" id="OEEstar3" name="OEErating" value="3"/><label for="OEEstar3"
+                                                                                             title="3 out of 5">3
+                        stars</label>
+                        <input type="radio" id="OEEstar2" name="OEErating" value="2"/><label for="OEEstar2"
+                                                                                             title="2 out of 5">2
+                        stars</label>
+                        <input type="radio" id="OEEstar1" name="OEErating" value="1"/><label for="OEEstar1"
+                                                                                             title="1 out of 5">1
+                        star</label>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="panel panel-cyan">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-3">
+                            <i class="fa fa-clock-o fa-5x"></i>
+                        </div>
+                        <div class="col-xs-9 text-right">
+                            <div id="panelAvailability" class="huge">%</div>
+                            <div>Availability</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="rating">
+                        <input type="radio" id="Availabilitystar5" name="Availabilityrating" value="5"/> <label
+                            for="Availabilitystar5" title="5 out of 5">5 stars</label>
+                        <input type="radio" id="Availabilitystar4" name="Availabilityrating" value="4"/> <label
+                            for="Availabilitystar4" title="4 out of 5">4 stars</label>
+                        <input type="radio" id="Availabilitystar3" name="Availabilityrating" value="3"/> <label
+                            for="Availabilitystar3" title="3 out of 5">3 stars</label>
+                        <input type="radio" id="Availabilitystar2" name="Availabilityrating" value="2"/> <label
+                            for="Availabilitystar2" title="2 out of 5">2 stars</label>
+                        <input type="radio" id="Availabilitystar1" name="Availabilityrating" value="1"/> <label
+                            for="Availabilitystar1" title="1 out of 5">1 stars</label>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="panel panel-cyan">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-3">
+                            <i class="fa fa-wrench fa-5x"></i>
+                        </div>
+                        <div class="col-xs-9 text-right">
+                            <div id="panelPerformance" class="huge">%</div>
+                            <div>Performance</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="rating">
+                        <input type="radio" id="Performancestar5" name="Performancerating" value="5"/><label
+                            for="Performancestar5" title="5 out of 5">5 stars</label>
+                        <input type="radio" id="Performancestar4" name="Performancerating" value="4"/><label
+                            for="Performancestar4" title="4 out of 5">4 stars</label>
+                        <input type="radio" id="Performancestar3" name="Performancerating" value="3"/><label
+                            for="Performancestar3" title="3 out of 5">3 stars</label>
+                        <input type="radio" id="Performancestar2" name="Performancerating" value="2"/><label
+                            for="Performancestar2" title="2 out of 5">2 stars</label>
+                        <input type="radio" id="Performancestar1" name="Performancerating" value="1"/><label
+                            for="Performancestar1" title="1 out of 5">1 stars</label>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="panel panel-cyan">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-3">
+                            <i class="fa fa-check-square-o fa-5x"></i>
+                        </div>
+                        <div class="col-xs-9 text-right">
+                            <div id="panelQuality" class="huge">%</div>
+                            <div>Quality</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-footer">
+                    <div class="rating">
+                        <input type="radio" id="Qualitystar5" name="Qualityrating" value="5"/><label for="Qualitystar5"
+                                                                                                     title="5 out of 5">5
+                        stars</label>
+                        <input type="radio" id="Qualitystar4" name="Qualityrating" value="4"/><label for="Qualitystar4"
+                                                                                                     title="4 out of 5">4
+                        stars</label>
+                        <input type="radio" id="Qualitystar3" name="Qualityrating" value="3"/><label for="Qualitystar3"
+                                                                                                     title="3 out of 5">3
+                        stars</label>
+                        <input type="radio" id="Qualitystar2" name="Qualityrating" value="2"/><label for="Qualitystar2"
+                                                                                                     title="2 out of 5">2
+                        stars</label>
+                        <input type="radio" id="Qualitystar1" name="Qualityrating" value="1"/><label for="Qualitystar1"
+                                                                                                     title="1 out of 5">1
+                        stars</label>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <!--<div class="col-md-5" style="padding-right: 0">-->
+        <div class="col-md-5">
+            <div id="TargetColor" class="panel panel-green">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-1">
+                            <i id="TargetIcon" class="fa fa-cog fa-spin fa-4x"></i>
+                        </div>
+
+                        <div id="Target" class="col-xs-11 text-right">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--<div class="col-md-7" style="padding-left: 0">-->
+        <div class="col-md-7">
+            <div class="panel panel-yellow">
+                <div class="panel-heading">
+                    <div class="row">
+                        <div class="col-xs-1">
+                            <i id="DowntimeIcon" class="fa fa-spinner fa-4x fa-fw"></i>
+                        </div>
+                        <div class="col-xs-11 text-right">
+                            <div id="Downtime" class="huge"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel-group" id="accordion">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <a data-toggle="collapse" data-parent="#accordion1" href="#collapse4">
+                    <i class="fa fa-area-chart"></i>
+                    All seeing. All knowing.
+                </a>
+                <!--<a data-toggle="collapse" data-parent="#accordion" href="#collapse4">-->
+                    <!--<i class="fa fa-area-chart"></i>-->
+                    <!--All seeing. All knowing.-->
+                <!--</a>-->
+            </div>
+
+
+            <div id="collapse4" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <div id="myCarousel" class="carousel slide" data-ride="carousel">
+                        <!-- Indicators -->
+                        <ol class="carousel-indicators">
+                            <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                            <li data-target="#myCarousel" data-slide-to="1"></li>
+                            <li data-target="#myCarousel" data-slide-to="2"></li>
+                            <li data-target="#myCarousel" data-slide-to="3"></li>
+                            <li data-target="#myCarousel" data-slide-to="4"></li>
+                        </ol>
+
+                        <!-- Wrapper for slides -->
+                        <div class="carousel-inner">
+                            <div class="item active">
+                                <div class="panel-body">
+                                    <div id="chartOeeTrend"></div>
+                                </div>
+                            </div>
+
+                            <div class="item">
+                                <div class="panel-body">
+                                    <div id="chartSixBigLosses"></div>
+                                </div>
+                            </div>
+
+                            <div class="item">
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div id="chartEvents" class="col-md-7"></div>
+                                        <div class="col-md-5">
+                                            <div class="panel-body">
+                                                <div class="table">
+                                                    <table id="eventsTable" class="table table-hover">
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="item">
+                                <div class="panel-body">
+                                    <div id="chartFloorMap"></div>
+                                </div>
+                            </div>
+
+                            <div class="item" style="align-content: center">
+                                <div class="panel-body">
+                                    <div id="chart3D" style="width: 1080px;height: 400px"></div>
+                                </div>
+                                <!--<div id="chart3D" style="align-content: center"></div>-->
+                            </div>
+                        </div>
+                        <a class="left carousel-control" href="#myCarousel" data-slide="prev">
+                            <span class="glyphicon glyphicon-chevron-left"></span>
+                            <span class="sr-only">Previous</span>
+                        </a>
+                        <a class="right carousel-control" href="#myCarousel" data-slide="next">
+                            <span class="glyphicon glyphicon-chevron-right"></span>
+                            <span class="sr-only">Next</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    Six Big Losses > Availability Loss > EQUIPMENT FAILURE
+                </div>
+                <div id="EquipmentFailure" class="panel-body">
+                    <div id="chartEquipmentFailure" class="col-sm-4"></div>
+                    <ul id="rateEquipmentFailure" class="col-sm-8" style="font-size: 16px">
+                        <li></li>
+                        <li></li>
+                    </ul>
+                </div>
+                <div class="panel-footer">
+                    Reasons for equipment failure include tooling failure, breakdowns, and unplanned
+                    maintenance. From the broader perspective of unplanned stops, other common reasons include no
+                    operators or
+                    materials, being starved by upstream equipment or being blocked by downstream equipment.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    Six Big Losses > Availability Loss > SETUP AND ADJUSTMENTS
+                </div>
+                <div id="SetupAndAdjustments" class="panel-body">
+                    <div id="chartSetupAndAdjustments" class="col-sm-4"></div>
+                    <ul id="rateSetupAndAdjustments" class="col-sm-8" style="font-size: 16px">
+                        <li></li>
+                        <li></li>
+                    </ul>
+                </div>
+                <div class="panel-footer">
+                    Reasons for Setup and Adjustments include setup, changeovers, major adjustments, and
+                    tooling adjustments. From the broader perspective of planned stops, other common reasons include
+                    cleaning,
+                    warmup time, planned maintenance, and quality inspections.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    Six Big Losses > Performance Loss > IDLING AND MINOR STOPS
+                </div>
+                <div id="IdlingAndMinorStops" class="panel-body" style="list-style-type: square">
+                    <div id="chartIdlingAndMinorStops" class="col-sm-4"></div>
+                    <ul id="rateIdlingAndMinorStops" class="col-sm-8" style="font-size: 16px">
+                        <li></li>
+                        <li></li>
+                    </ul>
+                </div>
+                <div class="panel-footer">
+                    Reasons for Idling and Minor Stops include misfeeds, material jams, obstructed product
+                    flow, incorrect settings, misaligned or blocked sensors, equipment design issues, and periodic quick
+                    cleaning.
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    Six Big Losses > Performance Loss > REDUCED SPEED
+                </div>
+                <div id="ReducedSpeed" class="panel-body">
+                    <div id="chartReducedSpeed" class="col-sm-4"></div>
+                    <ul id="rateReducedSpeed" class="col-sm-8" style="font-size: 16px">
+                        <li></li>
+                        <li></li>
+                    </ul>
+                </div>
+                <div class="panel-footer">
+                    Reasons for reduced speed include dirty or worn out equipment, poor lubrication,
+                    substandard materials, poor environmental conditions, operator inexperience, startup, and shutdown.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    Six Big Losses > Quality Loss > PROCESS DEFECTS
+                </div>
+                <div id="ProcessDefects" class="panel-body">
+                    <div id="chartProcessDefects" class="col-sm-4"></div>
+                    <ul id="rateProcessDefects" class="col-sm-8" style="font-size: 16px">
+                        <li></li>
+                        <li></li>
+                    </ul>
+                </div>
+                <div class="panel-footer">
+                    Reasons for process defects include incorrect equipment settings, operator or equipment
+                    handling errors, and lot expiration. This includes scrapped parts as well as parts that can be
+                    reworked.
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    Six Big Losses > Quality Loss > REDUCED YIELD
+                </div>
+                <div id="ReducedYield" class="panel-body">
+                    <div id="chartReducedYield" class="col-sm-4"></div>
+                    <ul id="rateReducedYield" class="col-sm-8" style="font-size: 16px">
+                        <li></li>
+                        <li></li>
+                    </ul>
+                </div>
+                <div class="panel-footer">
+                    Reasons for Reduced Yield include suboptimal changeovers, incorrect settings
+                    when a new part is run, equipment that needs warmup cycles, or equipment that inherently creates
+                    waste after
+                    startup.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var scene, camera, pointLight;//, stats;
+    var renderer, mixer, animationClip;
+
+    var clock = new THREE.Clock();
+    var container = document.getElementById('chart3D');
+    var window_innerWidth = 1080;
+    var window_innerHeight = 400;
+
+    //    stats = new Stats();
+    //    container.appendChild(stats.dom);
+
+    renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer.setClearColor(0xffffff);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window_innerWidth, window_innerHeight);
+    container.appendChild(renderer.domElement);
+
+    scene = new THREE.Scene();
+    scene.add(new THREE.GridHelper(20, 20));
+
+    camera = new THREE.PerspectiveCamera(40, window_innerWidth / window_innerHeight, 0.01, 1000);
+    camera.position.set(-5.00, 3.43, 11.31);
+    camera.lookAt(new THREE.Vector3(-1.22, 2.18, 4.58));
+
+    pointLight = new THREE.PointLight(0xffffff, 1.75);
+    pointLight.position.copy(camera.position);
+    scene.add(pointLight);
+
+
+    new THREE.ObjectLoader().load('Common/rts/pump.json', function (model) {
+
+        scene.add(model);
+
+        mixer = new THREE.AnimationMixer(model);
+        mixer.clipAction(model.animations[0]).play();
+
+        animate();
+
+    });
+
+
+    //    window.onresize = function () {
+    //
+    //        camera.aspect = window.innerWidth / window.innerHeight;
+    //        camera.updateProjectionMatrix();
+    //
+    //        renderer.setSize(window.innerWidth, window.innerHeight);
+    //
+    //    };
+
+    function animate() {
+        requestAnimationFrame(animate);
+        mixer.update(clock.getDelta());
+        renderer.render(scene, camera);
+    }
+</script>
+</body>
+</html>

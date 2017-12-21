@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'/>
+
+
+    <script id="sap-ui-bootstrap"
+            src="https://sapui5.netweaver.ondemand.com/resources/sap-ui-core.js"
+            data-sap-ui-libs="sap.m,sap.ui.commons"
+            data-sap-ui-theme="sap_belize">
+    </script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"
+          integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <script src="../../Common/js/default.js"></script>
+    <script src='moment.min.js'></script>
+
+
+    <link href='fullcalendar.css' rel='stylesheet'/>
+    <link href='scheduler.css' rel='stylesheet'/>
+    <script src='fullcalendar.js'></script>
+    <script src='scheduler.js'></script>
+
+
+    <script>
+
+        $(function () { // document ready
+                var wc = [];
+//                urlF = "/XMII/Illuminator?QueryTemplate=OwensboroOneHD/SCHEDULE/QUERIES/SQL_GetFloorMaps" +
+//                    "&Content-Type=text/xml";
+                urlF = 'SQL_GetFloorMaps.xml';
+                getData(urlF, getFloorMaps);
+
+                var floorMaps = [];
+
+                function getFloorMaps(DATA) {
+                    var ww = [];
+                    for (var n = 0; n < DATA.length; n++) {
+                        floorMaps.push({
+                            'recordID': DATA[n]['recordID'],
+                            'unitType': DATA[n]['unitType'],
+                            'unitName': DATA[n]['unitName'],
+                            'unitDescr': DATA[n]['unitDescr'],
+                            'idUnitParent': DATA[n]['idUnitParent'],
+                            'groupType': DATA[n]['groupType'],
+                        });
+                        if (floorMaps[n]['unitType'] == '5' && floorMaps[n]['groupType'] == 'mold') {
+                            ww.push({'recordID': floorMaps[n]['recordID'], 'unitDescr': floorMaps[n]['unitDescr']});
+                        }
+                    }
+//                    cc(floorMaps);
+//                    cc(ww);
+
+//                    cc(wc);
+                    var RES = [
+                        {
+                            id: 'a', WorkingCenter: 'Press Group 1', title: 'P1 HyBrid press NISSEI',
+                            children: [
+                                {id: 'a1', title: 'M649A', occupancy: 10,},
+                            ]
+                        },
+                        {
+                            id: 'b', WorkingCenter: 'Press Group 1', title: 'P2 HyBrid press NISSEI',
+                            children: [
+                                {id: 'b1', title: 'M995', occupancy: 10, eventColor: 'blue'},
+                            ]
+                        },
+                        {
+                            id: 'c', WorkingCenter: 'Press Group 1', title: 'P3 HyBrid press NISSEI',
+                            children: [
+                                {id: 'c1', title: 'M995', occupancy: 10, eventColor: 'blue'},
+                            ]
+                        },
+                        {
+                            id: 'd', WorkingCenter: 'Press Group 1', title: 'P4 HyBrid press NISSEI',
+                            children: [
+                                {id: 'd1', title: 'M640', occupancy: 10, eventColor: 'orange'},
+                            ]
+                        },
+                        {
+                            id: 'e', WorkingCenter: 'Press Group 1', title: 'P5 HyBrid press NISSEI',
+                            children: [
+                                {id: 'e1', title: 'M639', occupancy: 10, eventColor: 'black'},
+                                {id: 'e2', title: 'M640', occupancy: 10, eventColor: 'orange'},
+                            ]
+                        },
+                        {
+                            id: 'f', WorkingCenter: 'Press Group 1', title: 'P6 Electric press NISSEI',
+                            children: [
+                                {id: 'f1', title: 'M639 orange', occupancy: 100, eventColor: 'orange'},
+                                {id: 'f2', title: 'M639 green', occupancy: 100, eventColor: 'green'},
+                                {id: 'f3', title: 'M653', occupancy: 10, eventColor: 'red'},
+                                {id: 'f4', title: 'M654', occupancy: 10},
+                                {id: 'f5', title: 'M016', occupancy: 10},
+                            ]
+                        },
+                        {
+                            id: 'g', WorkingCenter: 'Press Group 2', title: 'P15 Electric press SUMITOMO',
+                            children: []
+                        },
+                        {id: 'h', WorkingCenter: 'Press Group 2', title: 'P16 Electric press SUMITOMO'},
+                        {id: 'i', WorkingCenter: 'Press Group 2', title: 'P17 Hydraulic  press SUMITOMO'},
+                        {id: 'j', WorkingCenter: 'Press Group 2', title: 'P18 Hydraulic  press SUMITOMO'},
+                        {id: 'k', WorkingCenter: 'Press Group 2', title: 'P30 Hydraulic  press TOSHIBA'},
+                        {id: 'l', WorkingCenter: 'Press Group 2_44', title: 'P24 Hydraulic press TOSHIBA'},
+                        {id: 'm', WorkingCenter: 'Press Group 2_44', title: 'P25 Hydraulic press TOSHIBA'},
+                        {id: 'n', WorkingCenter: 'Press Group 2_44', title: 'P26 Hydraulic press TOSHIBA'},
+                        {id: 'o', WorkingCenter: 'Press Group 2_44', title: 'P27 Hydraulic press TOSHIBA'},
+                        {id: 'p', WorkingCenter: 'Press Group 2_44', title: 'P28 Hydraulic press SANDRETTO'},
+                        {id: 'q', WorkingCenter: 'Press Group A', title: 'P34 Hydraulic press VANDORN'},
+                        {id: 'r', WorkingCenter: 'Press Group A', title: 'P35 Hydraulic press VANDORN'},
+                        {id: 's', WorkingCenter: 'Press Group 4', title: 'P36 Hydraulic press VANDORN'},
+                        {id: 't', WorkingCenter: 'Press Group B', title: 'P48 Hydraulic press CINCINNATI'},
+                        {id: 'u', WorkingCenter: 'Press Group B', title: 'P49 Hydraulic press CINCINNATI'},
+                        {id: 'v', WorkingCenter: 'Press Group 5', title: 'P7 Hydraulic press BOY'},
+                        {id: 'w', WorkingCenter: 'Press Group 5', title: 'P8 Hydraulic press BOY'},
+                        {id: 'x', WorkingCenter: 'Press Group 5', title: 'P9 Hydraulic press CINCINNATI'},
+                        {id: 'y', WorkingCenter: 'Press Group 5', title: 'P10 Hydraulic press CINCINNATI'},
+                        {id: 'z', WorkingCenter: 'Press Group 5', title: 'P11 Hydraulic press CINCINNATI'},
+                        {id: 'zz', WorkingCenter: 'Press Group 5', title: 'P47 Hydraulic press CINCINNATI'},
+                    ];
+
+//                    RES = [];
+                    for (var n = 0; n < ww.length; n++) {
+                        for (var m = 0; m < floorMaps.length; m++) {
+                            if (ww[n]['recordID'] == floorMaps[m]['idUnitParent']) {
+                                RES.push({
+                                    id: 'aaa_' + n + '_' + m,
+                                    WorkingCenter: ww[n]['unitDescr'],
+                                    title: floorMaps[m]['unitDescr'],
+                                    children: [
+//                                {id: 'a1', title: 'M649A', occupancy: 10, eventColor: 'blue'},
+                                    ]
+                                });
+                            }
+                        }
+
+                    }
+                    creatCalendar(RES, null, null);
+                }
+
+            }
+        );
+
+
+        function creatCalendar(Resources, v2, v3) {
+
+            $('#calendar').fullCalendar({
+                now: '2017-10-07',
+                editable: true,
+//			aspectRatio: 1.8,
+                scrollTime: '00:00',
+//                themeSystem: 'bootstrap3',
+//                hiddenDays: [ 1, 3, 5 ],
+//                firstDay: 0,
+//                isRTL:false,
+//                weekends: true,
+//                hiddenDays:[],
+//                columnHeader: true,
+//                businessHours: false,
+                fixedWeekCount: true,
+                height: 850,
+                selectable: true,
+                selectHelper: true,
+                customButtons: {
+                    myCustomButton: {
+                        text: 'myCustomButton!',
+                        click: function () {
+                            alert('clicked the custom button!');
+                        },
+                        icon: 'left-double-arrow'
+                    }
+                },
+                header: {
+                    left: 'today prev,next myCustomButton',
+                    center: 'title',
+                    right: 'timelineDay,timelineThreeDays,agendaWeek,month'
+                },
+                footer: {
+                    left: 'today prev,next',
+                    center: 'title',
+                    right: 'timelineDay,timelineThreeDays,agendaWeek,month'
+                },
+                defaultView: 'timelineDay',
+                views: {
+                    timelineThreeDays: {
+                        type: 'timeline',
+                        duration: {days: 3}
+                    }
+                },
+                resourceGroupField: 'WorkingCenter',
+                resourceLabelText: 'Working Centers',
+                resources: Resources,
+                events: [
+                    {
+                        id: '1',
+                        resourceId: 'a1',
+                        start: '2017-10-07T00:00:00',
+                        end: '2017-10-07T24:00:00',
+                        title: 'M639A',
+                        description: 'This is a  event'
+                    },
+                    {
+                        id: '2',
+                        resourceId: 'e1',
+                        start: '2017-10-07T07:00:00',
+                        end: '2017-10-07T15:00:00',
+                        title: 'M639',
+                        description: 'This is a  event'
+                    },
+                    {
+                        id: '2',
+                        resourceId: 'e1',
+                        start: '2017-10-07T23:00:00',
+                        end: '2017-10-08T07:00:00',
+                        title: 'M639',
+                        description: 'This is a  event'
+                    },
+                    {
+                        id: '22',
+                        resourceId: 'd1',
+                        start: '2017-10-07T15:00:00',
+                        end: '2017-10-07T23:00:00',
+                        title: 'M640',
+                        description: 'This is a  event'
+                    },
+                    {
+                        id: '3',
+                        resourceId: 'b1',
+                        start: '2017-10-07T07:00:00',
+                        end: '2017-10-07T15:00:00',
+                        title: 'M995',
+                        description: 'This is a  event'
+                    },
+                    {
+                        id: '11',
+                        resourceId: 'f1',
+                        start: '2017-10-07T01:00:00',
+                        end: '2017-10-07T05:00:00',
+                        title: 'M639 orange',
+                        description: 'This is a  event'
+                    },
+                    {
+                        id: '12',
+                        resourceId: 'f2',
+                        start: '2017-10-07T05:00:00',
+                        end: '2017-10-07T08:00:00',
+                        title: 'M639 green',
+                        description: 'This is a  event'
+                    },
+                    {
+                        id: '13',
+                        resourceId: 'f3',
+                        start: '2017-10-07T08:00:00',
+                        end: '2017-10-07T12:00:00',
+                        title: 'M653',
+                        description: 'This is a  event'
+                    },
+                    {
+                        id: '14',
+                        resourceId: 'f4',
+                        start: '2017-10-07T12:00:00',
+                        end: '2017-10-07T18:00:00',
+                        title: 'M654',
+                        description: 'This is a  event'
+                    },
+                    {
+                        id: '15',
+                        resourceId: 'f5',
+                        start: '2017-10-07T18:00:00',
+                        end: '2017-10-07T23:00:00',
+                        title: 'M016',
+                        description: 'This is a  event'
+                    }
+                ],
+
+                eventRender: function (event, element) {
+//                    cc(event.id);
+//                    cc(element);
+//                    element.qtip({
+//                        content: event.description
+//                    });
+                },
+                schedulerLicenseKey: 'CC-Attribution-NonCommercial-NoDerivatives'
+            });
+        }
+
+        function cc(obj) {
+            console.log(obj);
+        }
+    </script>
+    <style>
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Lucida Grande", Helvetica, Arial, Verdana, sans-serif;
+            font-size: 14px;
+        }
+
+        #calendar {
+            max-width: 1600px;
+            margin: 30px auto;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id='calendar'></div>
+
+<div></div>
+
+</body>
+</html>
