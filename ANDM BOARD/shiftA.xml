@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Rowsets CachedTime="" DateCreated="2017-12-18T18:26:53" EndDate="2017-12-18T18:26:53" StartDate="2017-12-18T17:26:53"
+         Version="15.0 SP7 Patch 15 (Oct 3, 2016)">
+    <Rowset>
+        <Columns>
+            <Column Description="HR" MaxRange="1" MinRange="0" Name="HR" SQLDataType="93" SourceColumn="HR"/>
+            <Column Description="CNT" MaxRange="1" MinRange="0" Name="CNT" SQLDataType="4" SourceColumn="CNT"/>
+        </Columns>
+        <Row>
+            <HR>2017-12-18T06:00:00</HR>
+            <CNT>21</CNT>
+        </Row>
+        <Row>
+            <HR>2017-12-18T07:00:00</HR>
+            <CNT>42</CNT>
+        </Row>
+        <Row>
+            <HR>2017-12-18T08:00:00</HR>
+            <CNT>34</CNT>
+        </Row>
+        <Row>
+            <HR>2017-12-18T09:00:00</HR>
+            <CNT>38</CNT>
+        </Row>
+        <Row>
+            <HR>2017-12-18T10:00:00</HR>
+            <CNT>34</CNT>
+        </Row>
+        <Row>
+            <HR>2017-12-18T11:00:00</HR>
+            <CNT>18</CNT>
+        </Row>
+        <Row>
+            <HR>2017-12-18T12:00:00</HR>
+            <CNT>40</CNT>
+        </Row>
+        <Row>
+            <HR>2017-12-18T13:00:00</HR>
+            <CNT>17</CNT>
+        </Row>
+        <Row>
+            <HR>2017-12-18T14:00:00</HR>
+            <CNT>38</CNT>
+        </Row>
+        <Row>
+            <HR>2017-12-18T15:00:00</HR>
+            <CNT>42</CNT>
+        </Row>
+        <Row>
+            <HR>2017-12-18T16:00:00</HR>
+            <CNT>0</CNT>
+        </Row>
+    </Rowset>
+</Rowsets>

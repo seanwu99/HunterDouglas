@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+    <title>ANDON MODEL</title>
+
+    <script id="sap-ui-bootstrap"
+            src="/sapui5/resources/sap-ui-core.js"
+            data-sap-ui-theme="sap_goldreflection"
+            data-sap-ui-libs="sap.ui.core,sap.ui.commons,sap.ui.table,sap.ui.ux3"
+            data-sap-ui-language="en">
+    </script>
+    <script src="Common/js/silent.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">
+
+    <script>
+        var isDev = (window.location.href.indexOf('http://localhost') >= 0);
+
+
+        var lineID = '';
+        var LineName = '';
+        var selected_unitName, selected_idUnitParentID, selected_unitSAPID, selected_unitDescr;
+        var shift = [];
+        var shiftStart = 0;
+        var shiftDuration = 0;
+        var breaks = [];// [['08:00', '08:00'], ['09:00', '09:00'], ['09:30', '09:40'], ['11:00', '11:00'], ['11:30', '11:50'], ['13:00', '13:00'], ['13:30', '13:40'], ['15:00', '15:00'], ['16:00', '16:00']];
+        var performanceHour = [];
+        var performanceFixed = [];// [1, 1, 60 / 50, 1, 60 / 40, 1, 60 / 50, 1, 1];
+        var downtimeHour = [];
+        var downtimeFixed = [];// [0, 0, 10, 0, 20, 0, 10, 0, 0];
+        var lastOpreation = '';
+        var minFix = 0;
+        $(function () {
+
+            getUnitID(document.getElementById("unit_name").value);
+            if ((Math.round((new Date()).getTime() / 60000) % 2) != 0) {
+                minFix = 60000;
+            }
+            andonBorad();
+            window.setInterval(refreshBorad, 6000);
+        });
+
+
+        function getUnitID(unitName) {
+            var timestamp = new Date().getTime();
+            var unit_name = escapeSQLString(unitName);
+            var unitidURL = "/XMII/Illuminator?QueryTemplate=MESM/ANDM/QUERIES/get_UnitIDbyName&Param.1=" + unit_name + "&ts=" + timestamp + "&Content-Type=text/xml";
+            cc(unitidURL);
+            getData(unitidURL, parseJsonUnitID);
+
+            function parseJsonUnitID(jsondata) {
+                selected_idUnitParentID = jsondata[jsondata.length - 1]['recordID'];
+                selected_unitSAPID = jsondata[jsondata.length - 1]['unitSAPID'];
+                selected_unitName = jsondata[jsondata.length - 1]['unitName'];
+                selected_unitDescr = jsondata[jsondata.length - 1]['unitDescr'];
+//                cc(selected_idUnitParentID);
+//                cc(selected_unitSAPID);
+//                cc(selected_unitName);
+//                cc(selected_unitDescr);
+                var unitURL = '/XMII/Illuminator?QueryTemplate=MESM/ANDM/QUERIES/get_LineBreaks&Param.1=' + selected_unitName + "&ts=" + timestamp + "&Content-Type=text/xml";
+                cc('unitURL: ' + unitURL);
+                getData(unitURL, function (shiftData) {
+                    var tString = (new Date(new Date() - (new Date().getTimezoneOffset() * 60000))).toISOString();
+
+                    shiftStart = shiftData[0]['shiftStart'];
+                    shiftDuration = parseInt(shiftData[0]['shiftDuration']);
+                    var lunchStart = shiftData[0]['plndDtStart'];
+                    // var lunchEnd = parseInt(shiftData[0]['plndDtDuration']);
+                    var lunchDuration = parseInt(shiftData[0]['plndDtDuration']);
+                    var _end = new Date(tString.substr(0, 11) + lunchStart + ':00').getTime() + lunchDuration * 60 * 1000;
+                    var lunchEnd = new Date(_end - (new Date(_end).getTimezoneOffset() * 60000)).toISOString().substr(11, 5);
+
+                    cc(lunchStart + ' / ' + lunchEnd + ' / ' + parseInt(shiftData[0]['plndDtDuration']));
+
+                    var break1stStart = shiftData[1]['plndDtStart'];
+                    var break1stEnd = parseInt(shiftData[1]['plndDtDuration']);
+                    var break1stDuration = parseInt(shiftData[1]['plndDtDuration']);
+                    // var b00 = new Date(tString.substr(0, 11) + break1stStart + ':00').getTime();
+                    var _end = new Date(tString.substr(0, 11) + break1stStart + ':00').getTime() + break1stEnd * 60 * 1000;
+                    break1stEnd = new Date(_end - (new Date(_end).getTimezoneOffset() * 60000)).toISOString().substr(11, 5);
+
+                    cc(break1stStart + ' / ' + break1stEnd + ' / ' + parseInt(shiftData[1]['plndDtDuration']));
+
+                    var break2ndStart = shiftData[2]['plndDtStart'];
+                    var break2ndEnd = parseInt(shiftData[2]['plndDtDuration']);
+                    var break2ndDuration = parseInt(shiftData[2]['plndDtDuration']);
+
+                    // var b10 = new Date(tString.substr(0, 11) + break2ndStart + ':00').getTime();
+                    var _end = new Date(tString.substr(0, 11) + break2ndStart + ':00').getTime() + break2ndEnd * 60 * 1000;
+                    break2ndEnd = new Date(_end - (new Date(_end).getTimezoneOffset() * 60000)).toISOString().substr(11, 5);
+                    cc(break2ndStart + ' / ' + break2ndEnd + ' / ' + parseInt(shiftData[2]['plndDtDuration']));
+
+                    var shift0 = new Date(tString.substr(0, 11) + shiftStart + ':00').getTime();
+
+                    cc("shiftDuration : " + shiftDuration);
+                    // shiftDuration = 7;
+                    var pp = Math.floor(100 / shiftDuration);
+                    for (var n = 0; n < 10; n++) {
+                        if (n < shiftDuration) {
+                            document.getElementById('cx' + n).style.width = pp + '%';
+                        } else {
+                            document.getElementById('cx' + n).style.display = 'none';
+                        }
+
+                    }
+                    shift = [];
+                    performanceFixed = [];
+                    downtimeFixed = [];
+                    breaks = [];
+                    for (var n = 0; n <= shiftDuration; n++) {
+                        var ss = new Date(shift0 + n * 3600000 - (new Date(shift0 + n * 3600000).getTimezoneOffset() * 60000)).toISOString().substr(11, 5);
+
+                        shift.push(ss);
+                        performanceFixed.push(1);
+                        downtimeFixed.push(0);
+                        if (n > 0) {
+                            breaks.push([shift[n - 1], shift[n]])
+                        }
+                    }
+
+                    for (var n = 0; n < shift.length - 1; n++) {
+
+                        if (lunchStart >= breaks[n][0] && lunchEnd <= breaks[n][1]) {
+//                            cc(n + ' / ' + LUNCH_0);
+                            breaks[n][0] = lunchStart;
+                            breaks[n][1] = lunchEnd;
+                            performanceFixed[n] = 60 / (60 - lunchDuration);
+                            downtimeFixed[n] = lunchDuration;
+                        } else if (break1stStart >= breaks[n][0] && break1stEnd <= breaks[n][1]) {
+//                            cc(n + ' / ' + BREAK_00);
+                            breaks[n][0] = break1stStart;
+                            breaks[n][1] = break1stEnd;
+                            performanceFixed[n] = 60 / (60 - break1stDuration);
+                            downtimeFixed[n] = break1stDuration;
+                        } else if (break2ndStart >= breaks[n][0] && break2ndEnd <= breaks[n][1]) {
+//                            cc(n + ' / ' + BREAK_10);
+                            breaks[n][0] = break2ndStart;
+                            breaks[n][1] = break2ndEnd;
+                            performanceFixed[n] = 60 / (60 - break2ndDuration);
+                            downtimeFixed[n] = break2ndDuration;
+
+                        } else {
+                            breaks[n][0] = breaks[n][1];
+                        }
+                    }
+
+                    if (selected_unitName == 'CS_JL_RR') {
+                        lineID = '300';
+                        lastOpreation = '71,72';
+                    } else if (selected_unitName == 'CS_JL_FR') {
+                        lastOpreation = '44';
+                        lineID = '200';
+                    } else if (selected_unitName == 'FA_JL_FR') {
+                        lastOpreation = "269,270";
+                        lineID = '800';
+                    } else if (selected_unitName == 'FA_JL_RR') {
+                        lastOpreation = "254,255";
+                        lineID = '700';
+                    } else if (selected_unitName == 'AXLEASSY') {
+                        lastOpreation = '250';
+                        lineID = '';
+                    } else if (selected_unitName == 'AXLEASY2') {
+                        lastOpreation = '251';
+                        lineID = '';
+                    } else if (selected_unitName == 'AXLEASY3') {
+                        lastOpreation = '252';
+                        lineID = '';
+                    } else if (selected_unitName == 'AXLEASY4') {
+                        lastOpreation = '253';
+                        lineID = '';
+                    } else if (selected_unitName == 'CS_JL_COMBO') {
+                        lastOpreation = '133';
+                        lineID = '';
+                    } else if (selected_unitName == 'FA_JL_COMBO') {
+                        lastOpreation = '283,284';
+                        lineID = '';
+                    } else if (selected_unitName == 'FA_COMBO') {
+                        lastOpreation = '283,284';
+                        lineID = '900';
+                    } else if (selected_unitName == 'CS_COMBO') {
+                        lastOpreation = '132,133';
+                        lineID = '100';
+                    }
+
+                    cc(shift);
+                    cc(breaks);
+                    cc(performanceFixed);
+                    cc(downtimeFixed);
+
+                    refreshBorad();
+                });
+            }
+        }
+
+
+        function refreshBorad() {
+//            var nStatus = 0;
+            andonBorad();
+//                    }
+//                }
+//            });
+        }
+
+        function andonBorad() {
+            LineName = selected_unitDescr;
+
+
+            var mmddyyyy = new Date().toISOString().substr(0, 10);          //yyyymmdd
+            mmddyyyy = mmddyyyy.substr(5, 5) + '-' + mmddyyyy.substr(0, 4); //mmddyyyy
+
+            document.getElementById('R1').innerHTML = 'Line ' + lineID + ' - ' + LineName;
+            var timeNow = (new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString()).substr(11, 5);
+            performanceHour = [];// [0, 0, 0, 0, 0, 0, 0, 0, 0];
+            downtimeHour = [];// [0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+            for (var n = 0; n < shiftDuration; n++) {
+                performanceHour.push(0);
+                downtimeHour.push(0);
+            }
+
+
+            var performanceAVG = 0, performanceNum = 0, downtimeTotal = 0, downtimeNum = 0;
+
+            var performanceURL = "/XMII/Illuminator?QueryTemplate=MESM/ANDM/QUERIES/get_LinePerformance" +
+                "&Param.1=" + mmddyyyy + ' ' + shift[0] +
+                "&Param.2=" + mmddyyyy + ' ' + timeNow +
+                "&Param.3=" + selected_unitName +
+                "&Param.4=" + lastOpreation +
+                "&Content-Type=text/xml";
+            cc("performanceURL " + performanceURL);
+
+
+            var downtimeURL = "/XMII/Illuminator?QueryTemplate=MESM/ANDM/QUERIES/get_LineDowntime" +
+                "&Param.1=" + mmddyyyy + ' ' + shift[0] +
+                "&Param.2=" + mmddyyyy + ' ' + timeNow +
+                "&Param.3=" + selected_unitName +
+                "&Param.4=" + lastOpreation +
+                "&Content-Type=text/xml";
+            cc("downtimeURL " + downtimeURL);
+
+
+            var deltaTime = 0;// 9 * 3600 * 1000 + 50 * 60 * 1000;
+
+
+            //switch pages
+            if (Math.round(((new Date()).getTime() + minFix) / 60000) % 2 == 0) { //switch pages
+                // cc("getData performanceURL " + performanceURL);
+                getData(performanceURL, displayPerformance);
+            } else {
+                // cc("getData downtimeURL " + downtimeURL);
+                getData(downtimeURL, displayDowntime);
+            }
+
+
+            function displayDowntime(jsondata) {
+//                cc(jsondata);
+
+                for (var n = 0; n < jsondata.length; n++) {
+                    downtimeHour[n] = Number(jsondata[n]['DWNT']);
+                }
+
+
+                for (var n = 1; n <= shiftDuration; n++) {
+
+                    var HHMM = (new Date(new Date().getTime() - deltaTime - (new Date().getTimezoneOffset() * 60000)).toISOString()).substr(11, 5);
+
+
+                    var tString = (new Date(new Date() - deltaTime - (new Date().getTimezoneOffset() * 60000))).toISOString();
+
+                    var t21 = (new Date(tString.substr(0, 10) + 'T' + tString.substr(11, 8)) - new Date(tString.substr(0, 10) + 'T' + breaks[n - 1][0] + ':00')) / 1000;
+
+
+                    if (HHMM >= shift[n - 1]) {
+                        if (HHMM >= breaks[n - 1][1]) {
+                            downtimeTotal += (Number(downtimeHour[n - 1]) - downtimeFixed[n - 1] * 60);
+                            downtimeHour[n - 1] = parseInt(Number(downtimeHour[n - 1]) / 60 - downtimeFixed[n - 1]);
+//                            cc('>> ' + downtimeHour[n - 1] + ' / ' + downtimeTotal);
+                        } else if (HHMM <= breaks[n - 1][0]) {
+                            downtimeTotal += (Number(downtimeHour[n - 1]));
+                            downtimeHour[n - 1] = parseInt(Number(downtimeHour[n - 1]) / 60);
+//                            cc('<< ' + downtimeHour[n - 1] + ' / ' + downtimeTotal);
+                        } else if (HHMM > breaks[n - 1][0] && HHMM < breaks[n - 1][1]) {
+                            var tString = new Date(new Date() - deltaTime - (new Date().getTimezoneOffset() * 60000)).toISOString();
+
+
+                            downtimeHour[n - 1] = parseInt(Number(downtimeHour[n - 1]) / 60 - t21 / 60);
+                            downtimeTotal += (Number(downtimeHour[n - 1]));
+
+                        }
+                    }
+
+
+                    if (HHMM >= shift[n - 1]) {
+                        if (document.getElementById('c2_' + (n - 1)).style.color == 'red') {
+                            document.getElementById('c2_' + (n - 1)).style.color = 'yellow';
+                        } else if (document.getElementById('c2_' + (n - 1)).style.color == 'green') {
+                            document.getElementById('c2_' + (n - 1)).style.color = 'green';
+                        }
+                        document.getElementById('c2_' + (n - 1)).innerHTML = downtimeHour[n - 1];
+                    } else {
+                        document.getElementById('c2_' + (n - 1)).innerHTML = '--';
+                        document.getElementById('c2_' + (n - 1)).style.color = 'gray';
+                    }
+
+                }
+                downtimeTotal = (Math.round(10 * downtimeTotal / 60) / 10);
+
+                document.getElementById('R2').innerHTML = downtimeTotal;
+                if (document.getElementById('R2').style.color == 'red') {
+                    document.getElementById('R2').style.color = 'yellow';
+                } else if (document.getElementById('R2').style.color == 'green') {
+                    document.getElementById('R2').style.color = 'green';
+                }
+
+                document.getElementById('t11').innerHTML = 'Down';
+                document.getElementById('t12').innerHTML = 'Time';
+                document.getElementById('t13').innerHTML = 'Display';
+                document.getElementById('t21').innerHTML = 'Todays';
+                document.getElementById('t22').innerHTML = 'Total';
+                document.getElementById('t23').innerHTML = 'Minutes';
+            }
+
+            function displayPerformance(jsondata) {
+
+//                cc(jsondata);
+
+                for (var n = 0; n < jsondata.length; n++) {
+                    performanceHour[n] = Number(jsondata[n]['CNT']);
+                }
+
+                for (var n = 1; n <= shiftDuration; n++) {
+//                    var timeLocal = (new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString()).substr(11, 5);
+                    var timeNow = (new Date(new Date().getTime() - deltaTime - (new Date().getTimezoneOffset() * 60000)).toISOString()).substr(11, 5);
+
+                    if (timeNow >= shift[n]) {
+                        performanceNum++;
+                        performanceHour[n - 1] = Number(performanceHour[n - 1]);
+                        performanceAVG += Number(performanceHour[n - 1]) * performanceFixed[n - 1];
+                    }
+
+//                    cc(timeNow + ' ==> ' + n + ' performanceHour/' + performanceHour[n - 1] + '  performanceAVG/' + performanceAVG + '  performanceNum/' + performanceNum);
+
+                    if (timeNow >= shift[n - 1]) {
+                        document.getElementById('c2_' + (n - 1)).innerHTML = performanceHour[n - 1];
+                    } else {
+                        document.getElementById('c2_' + (n - 1)).innerHTML = '--';
+                    }
+
+
+                    if (timeNow < shift[n - 1]) {
+                        document.getElementById('c2_' + (n - 1)).style.color = 'gray';
+                    } else {
+
+                        if (performanceHour[n - 1] * performanceFixed[n - 1] < 46) {
+                            document.getElementById('c2_' + (n - 1)).style.color = 'red';
+                        } else {
+                            document.getElementById('c2_' + (n - 1)).style.color = 'green';
+                        }
+                    }
+
+                    document.getElementById('c1_' + (n - 1)).innerHTML = shift[n - 1];
+                    document.getElementById('_c1_' + (n - 1)).innerHTML = '~' + shift[n];
+                }
+                performanceAVG = (Math.round(100 * performanceAVG / performanceNum) / 100);
+
+//                var sAvg = '' + performanceAVG;
+//                if (sAvg.length == 2) {
+//                    sAvg = sAvg + '.00';
+//                    sAvg
+//                }
+
+
+                var sAvg = '' + performanceAVG;
+                if (sAvg.length == 2) {
+                    sAvg = sAvg + '.0';
+                    sAvg
+                }
+                document.getElementById('R2').innerHTML = sAvg;
+
+                if (performanceAVG < 46) {
+                    document.getElementById('R2').style.color = 'red';
+                } else {
+                    document.getElementById('R2').style.color = 'green';
+                }
+
+                document.getElementById('t11').innerHTML = '';
+                document.getElementById('t12').innerHTML = '';
+                document.getElementById('t13').innerHTML = '';
+                document.getElementById('t21').innerHTML = '';
+                document.getElementById('t22').innerHTML = '';
+                document.getElementById('t23').innerHTML = '';
+            }
+        }
+
+        function cc(obj) {
+            console.log(obj);
+        }
+
+    </script>
+</head>
+
+<body style="overflow: hidden; background:black;">
+
+<input id="user_roles" type="hidden" value="{IllumLoginRoles}" style="display:block;width:1000px;" readonly/>
+<input id="user_role" type="hidden" value="{ROLE}" style="display:block;width:1000px;" readonly/>
+<input id="user_name" type="hidden" value="{IllumLoginName}" style="display: block;width:1000px;" readonly/>
+<input id="user_height" type="hidden" value="{HEIGHT}" style="display: block;width:100px;" readonly/>
+<input id="user_address" type="hidden" value="{Machine}" style="display:block;width:1000px;" readonly/>
+
+<input id="unit_name" type="hidden" value="{UNIT}" style="display:block;width:1000px;" readonly/>
+<input id="status_id" type="hidden" value="{STATUS}" style="display:block;width:1000px;" readonly/>
+
+
+<div>
+    <div id="R1"
+         style="font-size: 10vh; line-height: 10vh; text-align: center; color: green;  font-weight: bold;">
+        LINE
+    </div>
+
+
+    <div id="t1" style="float: left; width: 15%;">
+        <div style="font-size: 1vh; line-height: 20vh; text-align: right; color: white;">
+            .
+        </div>
+        <div id="t11"
+             style="font-size: 7vh; line-height: 8vh; text-align: right; color: lightgrey; font-weight: bold">
+            Down
+        </div>
+        <div id="t12"
+             style="font-size: 7vh; line-height: 8vh; text-align: right; color: lightgrey; font-weight: bold">
+            Time
+        </div>
+        <div id="t13"
+             style="font-size: 7vh; line-height: 8vh; text-align: right; color: lightgrey; font-weight: bold">
+            Display
+        </div>
+    </div>
+
+    <div id="R2"
+         style="float: left; width: 70%;font-size: 48vh; line-height: 50vh; text-align: center;color: red ; text-decoration: none;font-weight: bold;">
+        00.00
+    </div>
+
+    <div id="t2" style="float: left; width: 15%;">
+
+        <div style="font-size: 1vh; line-height: 20vh; text-align: left; color: white;">
+            .
+        </div>
+        <div id="t21"
+             style="font-size: 7vh; line-height: 8vh; text-align: left; color: lightgrey; font-weight: bold">
+            Todays
+        </div>
+        <div id="t22"
+             style="font-size: 7vh; line-height: 8vh; text-align: left; color: lightgrey; font-weight: bold">
+            Total
+        </div>
+        <div id="t23"
+             style="font-size: 7vh; line-height: 8vh; text-align: left; color: lightgrey; font-weight: bold">
+            Minutes
+        </div>
+    </div>
+
+    <div style="float: none; width: 10%; line-height: 1vh;text-align: center; font-size:1vh; color: black;">.</div>
+
+    <div id="cx0" style="display: block; float: left; width: 10%;">
+        <div id="c1_0"
+             style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+            00:00
+        </div>
+        <div id="_c1_0"
+             style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey; text-decoration: none;">
+            ~00:00
+        </div>
+        <div id="c2_0"
+             style="line-height: 18vh;text-align: center; font-size:16vh; color: green; text-decoration: none;">
+            00
+        </div>
+    </div>
+
+    <div id="cx1"
+         style="display: block; float: left; width: 10%; background: #71717c;background: -moz-linear-gradient(top, #71717c 0%, #44474c 35%, #000000 100%);background: -webkit-linear-gradient(top, #71717c 0%,#44474c 35%,#000000 100%);background: linear-gradient(to bottom, #71717c 0%,#44474c 35%,#000000 100%);filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#71717c', endColorstr='#000000',GradientType=0 );">
+        <div id="c1_1"
+             style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+            00:00
+        </div>
+        <div id="_c1_1"
+             style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey; text-decoration: none;">
+            ~00:00
+        </div>
+        <div id="c2_1"
+             style="line-height: 18vh;text-align: center; font-size:16vh; color: green; text-decoration: none;">
+            00
+        </div>
+    </div>
+
+    <div id="cx2" style="display: block; float: left; width: 10%;">
+        <div id="c1_2"
+             style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+            00:00
+        </div>
+        <div id="_c1_2"
+             style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey; text-decoration: none;">
+            ~00:00
+        </div>
+        <div id="c2_2"
+             style="line-height: 18vh;text-align: center; font-size:16vh; color: green; text-decoration: none;">
+            00
+        </div>
+    </div>
+
+    <div id="cx3"
+         style="display: block; float: left; width: 10%; background: #71717c;background: -moz-linear-gradient(top, #71717c 0%, #44474c 35%, #000000 100%);background: -webkit-linear-gradient(top, #71717c 0%,#44474c 35%,#000000 100%);background: linear-gradient(to bottom, #71717c 0%,#44474c 35%,#000000 100%);filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#71717c', endColorstr='#000000',GradientType=0 );">
+        <div id="c1_3"
+             style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+            00:00
+        </div>
+        <div id="_c1_3"
+             style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey; text-decoration: none;">
+            ~00:00
+        </div>
+        <div id="c2_3"
+             style="line-height: 18vh;text-align: center; font-size:16vh; color: green; text-decoration: none;">
+            00
+        </div>
+    </div>
+
+    <div id="cx4" style="display: block; float: left; width: 10%;">
+        <div id="c1_4"
+             style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+            00:00
+        </div>
+        <div id="_c1_4"
+             style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey; text-decoration: none;">
+            ~00:00
+        </div>
+        <div id="c2_4"
+             style="line-height: 18vh;text-align: center; font-size:16vh; color: green; text-decoration: none;">
+            00
+        </div>
+    </div>
+
+    <div id="cx5"
+         style="display: block; float: left; width: 10%; background: #71717c;background: -moz-linear-gradient(top, #71717c 0%, #44474c 35%, #000000 100%);background: -webkit-linear-gradient(top, #71717c 0%,#44474c 35%,#000000 100%);background: linear-gradient(to bottom, #71717c 0%,#44474c 35%,#000000 100%);filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#71717c', endColorstr='#000000',GradientType=0 );">
+        <div id="c1_5"
+             style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+            00:00
+        </div>
+        <div id="_c1_5"
+             style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey; text-decoration: none;">
+            ~00:00
+        </div>
+        <div id="c2_5"
+             style="line-height: 18vh;text-align: center; font-size:16vh; color: green; text-decoration: none;">
+            00
+        </div>
+    </div>
+
+    <div id="cx6" style="display: block; float: left; width: 10%;">
+        <div id="c1_6"
+             style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+            00:00
+        </div>
+        <div id="_c1_6"
+             style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey; text-decoration: none;">
+            ~00:00
+        </div>
+        <div id="c2_6"
+             style="line-height: 18vh;text-align: center; font-size:16vh; color: green; text-decoration: none;">
+            00
+        </div>
+    </div>
+
+    <div id="cx7"
+         style="display: block; float: left; width: 10%; background: #71717c;background: -moz-linear-gradient(top, #71717c 0%, #44474c 35%, #000000 100%);background: -webkit-linear-gradient(top, #71717c 0%,#44474c 35%,#000000 100%);background: linear-gradient(to bottom, #71717c 0%,#44474c 35%,#000000 100%);filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#71717c', endColorstr='#000000',GradientType=0 );">
+        <div id="c1_7"
+             style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+            00:00
+        </div>
+        <div id="_c1_7"
+             style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey; text-decoration: none;">
+            ~00:00
+        </div>
+        <div id="c2_7"
+             style="line-height: 18vh;text-align: center; font-size:16vh; color: green; text-decoration: none;">
+            00
+        </div>
+    </div>
+
+    <div id="cx8" style="display: block; float: left; width: 10%;">
+        <div id="c1_8"
+             style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+            00:00
+        </div>
+        <div id="_c1_8"
+             style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey; text-decoration: none;">
+            ~00:00
+        </div>
+        <div id="c2_8"
+             style="line-height: 18vh;text-align: center; font-size:16vh; color: green; text-decoration: none;">
+            00
+        </div>
+    </div>
+
+    <div id="cx9"
+         style="display: block; float: left; width: 10%; background: #71717c;background: -moz-linear-gradient(top, #71717c 0%, #44474c 35%, #000000 100%);background: -webkit-linear-gradient(top, #71717c 0%,#44474c 35%,#000000 100%);background: linear-gradient(to bottom, #71717c 0%,#44474c 35%,#000000 100%);filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#71717c', endColorstr='#000000',GradientType=0 );">
+        <div id="c1_9"
+             style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+            00:00
+        </div>
+        <div id="_c1_9"
+             style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey; text-decoration: none;">
+            ~00:00
+        </div>
+        <div id="c2_9"
+             style="line-height: 18vh;text-align: center; font-size:16vh; color: green; text-decoration: none;">
+            00
+        </div>
+    </div>
+</div>
+</body>
+</html>

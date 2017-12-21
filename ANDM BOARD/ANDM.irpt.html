@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=yes">
+    <title>ANDON MODEL</title>
+
+    <script id="sap-ui-bootstrap"
+            src="/sapui5/resources/sap-ui-core.js"
+            data-sap-ui-theme="sap_goldreflection"
+            data-sap-ui-libs="sap.ui.core,sap.ui.commons,sap.ui.table,sap.ui.ux3"
+            data-sap-ui-language="en">
+    </script>
+    <script src="Common/js/silent.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css"
+          integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+
+    <script>
+        var isDev = (window.location.href.indexOf('http://localhost') >= 0);
+        var lineID = '';
+        var LineName = '';
+        var selected_unitName, selected_idUnitParentID, selected_unitSAPID, selected_unitDescr;
+        var minFix = 0;
+        $(function () {
+            getUnitID(document.getElementById("unit_name").value);
+            if ((Math.round((new Date()).getTime() / 60000) % 2) != 0) {
+                minFix = 60000;
+            }
+            andonBorad();
+            window.setInterval(refreshBorad, 60000);
+        });
+
+
+        function getUnitID(unitName) {
+            var timestamp = new Date().getTime();
+            var unit_name = escapeSQLString(unitName);
+            url = "/XMII/Illuminator?QueryTemplate=MESM/ANDM/QUERIES/get_UnitIDbyName&Param.1=" + unit_name + "&ts=" + timestamp + "&Content-Type=text/xml";
+            getData(url, parseJsonUnitID);
+
+            function parseJsonUnitID(jsondata) {
+                selected_idUnitParentID = jsondata[jsondata.length - 1]['recordID'];
+                selected_unitSAPID = jsondata[jsondata.length - 1]['unitSAPID'];
+                selected_unitName = jsondata[jsondata.length - 1]['unitName'];
+                selected_unitDescr = jsondata[jsondata.length - 1]['unitDescr'];
+//                cc(selected_idUnitParentID);
+//                cc(selected_unitSAPID);
+//                cc(selected_unitName);
+//                cc(selected_unitDescr);
+                refreshBorad();
+            }
+        }
+
+
+        function refreshBorad() {
+//            var nStatus = 0;
+            andonBorad();
+//                    }
+//                }
+//            });
+        }
+
+        function andonBorad() {
+            LineName = selected_unitDescr;
+
+
+            var mmddyyyy = new Date().toISOString().substr(0, 10);          //yyyymmdd
+            mmddyyyy = mmddyyyy.substr(5, 5) + '-' + mmddyyyy.substr(0, 4); //mmddyyyy
+            var tvk = [false, false, false, false, false, false, false, false];
+            var param1 = ['07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'];
+            var param2 = ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'];
+            var param3 = selected_unitName;
+            var param4 = '';
+
+            var breaks = [['08:00', '08:00'], ['09:00', '09:00'], ['09:20', '09:30'], ['11:00', '11:00'], ['11:20', '11:40'], ['13:00', '13:00'], ['13:20', '13:30'], ['15:00', '15:00'], ['16:00', '16:00']];
+            var breaks = [['08:00', '08:00'], ['09:00', '09:00'], ['09:30', '09:40'], ['11:00', '11:00'], ['11:30', '11:50'], ['13:00', '13:00'], ['13:30', '13:40'], ['15:00', '15:00'], ['16:00', '16:00']];
+
+            //todo: get data from SQL
+            lineID = '';
+
+            if (param3 == 'CS_JL_RR') {
+                lineID = '300';
+//                LineName = 'Center Section Rear';
+                param4 = '71,72';
+                performanceFixed = [1, 1, 60 / 50, 1, 60 / 40, 1, 60 / 50, 1, 1];
+                breaks = [['08:00', '08:00'], ['09:00', '09:00'], ['09:20', '09:30'], ['11:00', '11:00'], ['11:20', '11:40'], ['13:00', '13:00'], ['13:20', '13:30'], ['15:00', '15:00'], ['16:00', '16:00']];
+            } else if (param3 == 'CS_JL_FR') {
+                param4 = '44';
+                lineID = '200';
+//                LineName = 'Center Section Front';
+                performanceFixed = [1, 1, 60 / 50, 1, 60 / 40, 1, 60 / 50, 1, 1];
+                breaks = [['08:00', '08:00'], ['09:00', '09:00'], ['09:20', '09:30'], ['11:00', '11:00'], ['11:20', '11:40'], ['13:00', '13:00'], ['13:20', '13:30'], ['15:00', '15:00'], ['16:00', '16:00']];
+            } else if (param3 == 'FA_JL_FR') {
+                param4 = "269,270";
+                lineID = '800';
+//                LineName = 'Final Assembly Front ';
+                performanceFixed = [1, 1, 60 / 50, 1, 60 / 40, 1, 60 / 50, 1, 1];
+                breaks = [['08:00', '08:00'], ['09:00', '09:00'], ['09:30', '09:40'], ['11:00', '11:00'], ['11:30', '11:50'], ['13:00', '13:00'], ['13:30', '13:40'], ['15:00', '15:00'], ['16:00', '16:00']];
+            } else if (param3 == 'FA_JL_RR') {
+                param4 = "254,255";
+                lineID = '700';
+//                LineName = 'Final Assembly Rear';
+                performanceFixed = [1, 1, 60 / 50, 1, 60 / 40, 1, 60 / 50, 1, 1];
+                breaks = [['08:00', '08:00'], ['09:00', '09:00'], ['09:30', '09:40'], ['11:00', '11:00'], ['11:30', '11:50'], ['13:00', '13:00'], ['13:30', '13:40'], ['15:00', '15:00'], ['16:00', '16:00']];
+            } else if (param3 == 'AXLEASSY') {
+                param4 = '250';
+                lineID = '';
+//                LineName = 'Axle Shaft Assembly 1';
+            } else if (param3 == 'AXLEASY2') {
+                param4 = '251';
+                lineID = '';
+//                LineName = 'Axle Shaft Assemly 2';
+            } else if (param3 == 'AXLEASY3') {
+                param4 = '252';
+                lineID = '';
+//                LineName = 'Axle Shaft Assembly 3';
+            } else if (param3 == 'AXLEASY4') {
+                param4 = '253';
+                lineID = '';
+//                LineName = 'Axle Shaft Assembly 4';
+            } else if (param3 == 'CS_JL_COMBO') {
+                param4 = '133';
+                lineID = '';
+//                LineName = 'Center Section Combo';
+            } else if (param3 == 'FA_JL_COMBO') {
+                param4 = '283,284';
+                lineID = '';
+//                LineName = 'Final Assembly Combo';
+            } else if (param3 == 'FA_COMBO') {
+                param4 = '283,284';
+                lineID = '900';
+//                LineName = '';
+            } else if (param3 == 'CS_COMBO') {
+                param4 = '132,133';
+                lineID = '100';
+//                LineName = '';
+            }
+//            cc(breaks);
+            document.getElementById('R1').innerHTML = 'Line ' + lineID + ' - ' + LineName;
+//            cc('andonBorad');
+//            cc(param3);
+            var timeNow = (new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString()).substr(11, 5);
+
+            var performanceHour = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+            var performanceFixed = [1, 1, 60 / 50, 1, 60 / 40, 1, 60 / 50, 1, 1];
+            var performanceAVG = 0, performanceNum = 0;
+
+            var performanceURL = "/XMII/Illuminator?QueryTemplate=MESM/ANDM/QUERIES/get_LinePerformance" +
+                "&Param.1=" + mmddyyyy + ' ' + param1[0] +
+                "&Param.2=" + mmddyyyy + ' ' + timeNow +
+                "&Param.3=" + param3 +
+                "&Param.4=" + param4 +
+                "&Content-Type=text/xml";
+//            cc("performanceURL " + performanceURL);
+
+            var downtimeHour = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+            var downtimeFixed = [0, 0, 10, 0, 20, 0, 10, 0, 0];
+            var downtimeTotal = 0, downtimeNum = 0;
+
+            var downtimeURL = "/XMII/Illuminator?QueryTemplate=MESM/ANDM/QUERIES/get_LineDowntime" +
+                "&Param.1=" + mmddyyyy + ' ' + param1[0] +
+                "&Param.2=" + mmddyyyy + ' ' + timeNow +
+                "&Param.3=" + param3 +
+                "&Param.4=" + param4 +
+                "&Content-Type=text/xml";
+//            cc("downtimeURL " + downtimeURL);
+
+//            if (isDev) {
+//                performanceURL = "get_LinePerformance.xml"
+//                downtimeURL = "get_LineDowntime.xml"
+//            }
+
+
+            var dt = 0;// 9 * 3600 * 1000 + 50 * 60 * 1000;
+
+
+            //switch pages
+            if (Math.round(((new Date()).getTime() + minFix) / 60000) % 2 == 0) { //switch pages
+                cc("getData performanceURL " + performanceURL);
+                getData(performanceURL, displayPerformance);
+            } else {
+                cc("getData downtimeURL " + downtimeURL);
+                getData(downtimeURL, displayDowntime);
+            }
+
+
+            function displayDowntime(jsondata) {
+//                cc(jsondata);
+
+                for (var n = 0; n < jsondata.length; n++) {
+                    downtimeHour[n] = Number(jsondata[n]['DWNT']);
+                }
+
+
+                for (var n = 1; n < 10; n++) {
+
+                    var HHMM = (new Date(new Date().getTime() - dt - (new Date().getTimezoneOffset() * 60000)).toISOString()).substr(11, 5);
+
+
+                    var tString = (new Date(new Date() - dt - (new Date().getTimezoneOffset() * 60000))).toISOString();
+
+                    var t21 = (new Date(tString.substr(0, 10) + 'T' + tString.substr(11, 8)) - new Date(tString.substr(0, 10) + 'T' + breaks[n - 1][0] + ':00')) / 1000;
+
+
+                    if (HHMM >= param1[n - 1]) {
+                        if (HHMM >= breaks[n - 1][1]) {
+                            downtimeTotal += (Number(downtimeHour[n - 1]) - downtimeFixed[n - 1] * 60);
+                            downtimeHour[n - 1] = parseInt(Number(downtimeHour[n - 1]) / 60 - downtimeFixed[n - 1]);
+//                            cc('>> ' + downtimeHour[n - 1] + ' / ' + downtimeTotal);
+                        } else if (HHMM <= breaks[n - 1][0]) {
+                            downtimeTotal += (Number(downtimeHour[n - 1]) );
+                            downtimeHour[n - 1] = parseInt(Number(downtimeHour[n - 1]) / 60);
+//                            cc('<< ' + downtimeHour[n - 1] + ' / ' + downtimeTotal);
+                        } else if (HHMM > breaks[n - 1][0] && HHMM < breaks[n - 1][1]) {
+                            var tString = new Date(new Date() - dt - (new Date().getTimezoneOffset() * 60000)).toISOString();
+
+
+                            downtimeHour[n - 1] = parseInt(Number(downtimeHour[n - 1]) / 60 - t21 / 60);
+                            downtimeTotal += (Number(downtimeHour[n - 1]));
+
+                        }
+                    }
+
+
+                    if (HHMM >= param1[n - 1]) {
+//                        cc("style.color");
+//                        cc(document.getElementById('c2' + n).style.color.toString());
+                        if (document.getElementById('c2' + n).style.color == 'red') {
+                            document.getElementById('c2' + n).style.color = 'yellow';
+                        } else if (document.getElementById('c2' + n).style.color == 'green') {
+                            document.getElementById('c2' + n).style.color = 'green';
+                        }
+                        document.getElementById('c2' + n).innerHTML = downtimeHour[n - 1];
+                    } else {
+                        document.getElementById('c2' + n).innerHTML = '--';
+                        document.getElementById('c2' + n).style.color = 'gray';
+                    }
+
+                }
+                downtimeTotal = (Math.round(10 * downtimeTotal / 60) / 10);
+
+                document.getElementById('R2').innerHTML = downtimeTotal;
+                if (document.getElementById('R2').style.color == 'red') {
+                    document.getElementById('R2').style.color = 'yellow';
+                } else if (document.getElementById('R2').style.color == 'green') {
+                    document.getElementById('R2').style.color = 'green';
+                }
+
+                document.getElementById('t11').innerHTML = 'Down';
+                document.getElementById('t12').innerHTML = 'Time';
+                document.getElementById('t13').innerHTML = 'Display';
+                document.getElementById('t21').innerHTML = 'Todays';
+                document.getElementById('t22').innerHTML = 'Total';
+                document.getElementById('t23').innerHTML = 'Minutes';
+            }
+
+            function displayPerformance(jsondata) {
+
+//                cc(jsondata);
+
+                for (var n = 0; n < jsondata.length; n++) {
+                    performanceHour[n] = Number(jsondata[n]['CNT']);
+                }
+
+                for (var n = 1; n < 10; n++) {
+//                    var timeLocal = (new Date(new Date().getTime() - (new Date().getTimezoneOffset() * 60000)).toISOString()).substr(11, 5);
+                    var timeNow = (new Date(new Date().getTime() - dt - (new Date().getTimezoneOffset() * 60000)).toISOString()).substr(11, 5);
+
+                    if (timeNow >= param2[n - 1]) {
+                        performanceNum++;
+                        performanceHour[n - 1] = Number(performanceHour[n - 1]);
+                        performanceAVG += Number(performanceHour[n - 1]) * performanceFixed[n - 1];
+                    }
+
+//                    cc(timeNow + ' ==> ' + n + ' performanceHour/' + performanceHour[n - 1] + '  performanceAVG/' + performanceAVG + '  performanceNum/' + performanceNum);
+
+                    if (timeNow >= param1[n - 1]) {
+                        document.getElementById('c2' + n).innerHTML = performanceHour[n - 1];
+                    } else {
+                        document.getElementById('c2' + n).innerHTML = '--';
+                    }
+
+
+                    if (timeNow < param1[n - 1]) {
+                        document.getElementById('c2' + n).style.color = 'gray';
+                    } else {
+
+                        if (performanceHour[n - 1] * performanceFixed[n - 1] < 46) {
+                            document.getElementById('c2' + n).style.color = 'red';
+                        } else {
+                            document.getElementById('c2' + n).style.color = 'green';
+                        }
+                    }
+
+                    document.getElementById('c1' + n).innerHTML = param1[n - 1];
+                    document.getElementById('_c1' + n).innerHTML = '~' + param2[n - 1];
+                }
+                performanceAVG = (Math.round(100 * performanceAVG / performanceNum) / 100);
+
+//                var sAvg = '' + performanceAVG;
+//                if (sAvg.length == 2) {
+//                    sAvg = sAvg + '.00';
+//                    sAvg
+//                }
+
+
+                var sAvg = '' + performanceAVG;
+                if (sAvg.length == 2) {
+                    sAvg = sAvg + '.0';
+                    sAvg
+                }
+                document.getElementById('R2').innerHTML = sAvg;
+
+                if (performanceAVG < 46) {
+                    document.getElementById('R2').style.color = 'red';
+                } else {
+                    document.getElementById('R2').style.color = 'green';
+                }
+
+                document.getElementById('t11').innerHTML = '';
+                document.getElementById('t12').innerHTML = '';
+                document.getElementById('t13').innerHTML = '';
+                document.getElementById('t21').innerHTML = '';
+                document.getElementById('t22').innerHTML = '';
+                document.getElementById('t23').innerHTML = '';
+            }
+        }
+
+        function cc(obj) {
+            console.log(obj);
+        }
+
+    </script>
+</head>
+
+<body style="overflow: hidden; background:black;">
+
+<input id="user_roles" type="hidden" value="{IllumLoginRoles}" style="display:block;width:1000px;" readonly/>
+<input id="user_role" type="hidden" value="{ROLE}" style="display:block;width:1000px;" readonly/>
+<input id="user_name" type="hidden" value="{IllumLoginName}" style="display: block;width:1000px;" readonly/>
+<input id="user_height" type="hidden" value="{HEIGHT}" style="display: block;width:100px;" readonly/>
+<input id="user_address" type="hidden" value="{Machine}" style="display:block;width:1000px;" readonly/>
+
+<input id="unit_name" type="hidden" value="{UNIT}" style="display:block;width:1000px;" readonly/>
+<input id="status_id" type="hidden" value="{STATUS}" style="display:block;width:1000px;" readonly/>
+
+<div id="R1" class="text-success" style="font-size: 10vh; line-height: 10vh; text-align: center; font-weight:bold;">
+    LINE
+</div>
+
+
+<div class="row">
+    <div class="col-2">
+        <div style="font-size: 1vh; line-height: 20vh; text-align: right; color: white;">
+            .
+        </div>
+        <div id="t11"
+             style="font-size: 7vh; line-height: 8vh; text-align: right; color: lightgrey; font-weight: bold">
+            Down
+        </div>
+        <div id="t12"
+             style="font-size: 7vh; line-height: 8vh; text-align: right; color: lightgrey; font-weight: bold">
+            Time
+        </div>
+        <div id="t13"
+             style="font-size: 7vh; line-height: 8vh; text-align: right; color: lightgrey; font-weight: bold">
+            Display
+        </div>
+    </div>
+
+
+    <div id="R2" class="col-8"
+         style="font-size: 48vh; line-height: 50vh; text-align: center;color: red ; text-decoration: none; font-weight:bold; ">
+        00.00
+    </div>
+
+
+    <div class="col-2">
+        <div style="font-size: 1vh; line-height: 20vh; text-align: left; color: white;">
+            .
+        </div>
+        <div id="t21"
+             style="font-size: 7vh; line-height: 8vh; text-align: left; color: lightgrey; font-weight: bold">
+            Todays
+        </div>
+        <div id="t22"
+             style="font-size: 7vh; line-height: 8vh; text-align: left; color: lightgrey; font-weight: bold">
+            Total
+        </div>
+        <div id="t23"
+             style="font-size: 7vh; line-height: 8vh; text-align: left; color: lightgrey; font-weight: bold">
+            Minutes
+        </div>
+    </div>
+</div>
+
+
+<div class="row">
+
+    <div class="col-4">
+        <div class="row">
+            <div class="col-4">
+                <div id="c11"
+                     style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+                    00:00
+                </div>
+                <div id="_c11" style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey;">~00:00
+                </div>
+                <div id="c21"
+                     style="line-height: 18vh; font-size: 16vh; text-align: center; color:green; text-decoration: none;">
+                    00
+                </div>
+            </div>
+            <div class="col-4"
+                 style="background: #71717c;background: -moz-linear-gradient(top, #71717c 0%, #44474c 35%, #000000 100%);background: -webkit-linear-gradient(top, #71717c 0%,#44474c 35%,#000000 100%);background: linear-gradient(to bottom, #71717c 0%,#44474c 35%,#000000 100%);filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#71717c', endColorstr='#000000',GradientType=0 );">
+                <div id="c12"
+                     style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+                    00:00
+                </div>
+                <div id="_c12" style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey;">~00:00
+                </div>
+                <div id="c22"
+                     style="line-height: 18vh; font-size: 16vh;text-align: center; color:green; text-decoration: none;">
+                    00
+                </div>
+            </div>
+            <div class="col-4">
+                <div id="c13"
+                     style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+                    00:00
+                </div>
+                <div id="_c13" style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey;">~00:00
+                </div>
+                <div id="c23"
+                     style="line-height: 18vh; font-size: 16vh;text-align: center; color:green; text-decoration: none;">
+                    00
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="row">
+            <div class="col-4"
+                 style="background: #71717c;background: -moz-linear-gradient(top, #71717c 0%, #44474c 35%, #000000 100%);background: -webkit-linear-gradient(top, #71717c 0%,#44474c 35%,#000000 100%);background: linear-gradient(to bottom, #71717c 0%,#44474c 35%,#000000 100%);filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#71717c', endColorstr='#000000',GradientType=0 );">
+                <div id="c14"
+                     style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+                    00:00
+                </div>
+                <div id="_c14" style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey;">~00:00
+                </div>
+                <div id="c24"
+                     style="line-height: 18vh; font-size: 16vh; text-align: center; color:green; text-decoration: none;">
+                    00
+                </div>
+            </div>
+            <div class="col-4">
+                <div id="c15"
+                     style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+                    00:00
+                </div>
+                <div id="_c15" style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey;">~00:00
+                </div>
+                <div id="c25"
+                     style="line-height: 18vh; font-size: 16vh;text-align: center; color:green; text-decoration: none;">
+                    00
+                </div>
+            </div>
+            <div class="col-4"
+                 style="background: #71717c;background: -moz-linear-gradient(top, #71717c 0%, #44474c 35%, #000000 100%);background: -webkit-linear-gradient(top, #71717c 0%,#44474c 35%,#000000 100%);background: linear-gradient(to bottom, #71717c 0%,#44474c 35%,#000000 100%);filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#71717c', endColorstr='#000000',GradientType=0 );">
+                <div id="c16"
+                     style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+                    00:00
+                </div>
+                <div id="_c16" style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey;">~00:00
+                </div>
+                <div id="c26"
+                     style="line-height: 18vh; font-size: 16vh;text-align: center; color:green; text-decoration: none;">
+                    00
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-4">
+        <div class="row">
+            <div class="col-4">
+                <div id="c17"
+                     style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+                    00:00
+                </div>
+                <div id="_c17" style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey;">~00:00
+                </div>
+                <div id="c27"
+                     style="line-height: 18vh; font-size: 16vh; text-align: center; color:green; text-decoration: none;">
+                    00
+                </div>
+            </div>
+            <div class="col-4"
+                 style="background: #71717c;background: -moz-linear-gradient(top, #71717c 0%, #44474c 35%, #000000 100%);background: -webkit-linear-gradient(top, #71717c 0%,#44474c 35%,#000000 100%);background: linear-gradient(to bottom, #71717c 0%,#44474c 35%,#000000 100%);filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#71717c', endColorstr='#000000',GradientType=0 );">
+                <div id="c18"
+                     style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+                    00:00
+                </div>
+                <div id="_c18" style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey;">~00:00
+                </div>
+                <div id="c28"
+                     style="line-height: 18vh; font-size: 16vh;text-align: center; color:green; text-decoration: none;">
+                    00
+                </div>
+            </div>
+            <div class="col-4">
+                <div id="c19"
+                     style="line-height: 8vh;text-align: center; font-size:7vh; color: lightgrey; text-decoration: underline;">
+                    00:00
+                </div>
+                <div id="_c19" style="line-height: 5vh;text-align: center; font-size:5vh; color: lightgrey;">~00:00
+                </div>
+                <div id="c29"
+                     style="line-height: 18vh; font-size: 16vh;text-align: center; color:green; text-decoration: none;">
+                    00
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

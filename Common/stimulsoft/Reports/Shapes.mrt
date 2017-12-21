@@ -1,0 +1,615 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<StiSerializer version="1.02" type="Net" application="StiReport">
+  <CalculationMode>Interpretation</CalculationMode>
+  <Dictionary Ref="1" type="Dictionary" isKey="true">
+    <BusinessObjects isList="true" count="0" />
+    <Databases isList="true" count="0" />
+    <DataSources isList="true" count="0" />
+    <Relations isList="true" count="0" />
+    <Report isRef="0" />
+    <Variables isList="true" count="0" />
+  </Dictionary>
+  <EngineVersion>EngineV2</EngineVersion>
+  <GlobalizationStrings isList="true" count="0" />
+  <MetaTags isList="true" count="0" />
+  <Pages isList="true" count="1">
+    <Page1 Ref="2" type="Page" isKey="true">
+      <Border>None;Black;2;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <Components isList="true" count="31">
+        <Shape1 Ref="3" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[178:235:242]</Brush>
+          <ClientRectangle>10,160,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape1</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="4" type="Stimulsoft.Report.Components.ShapeTypes.StiRectangleShapeType" isKey="true" />
+          <Size>3</Size>
+        </Shape1>
+        <Shape3 Ref="5" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[128:222:234]</Brush>
+          <ClientRectangle>140,160,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape3</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="6" type="Stimulsoft.Report.Components.ShapeTypes.StiRoundedRectangleShapeType" isKey="true">
+            <Round>0.2</Round>
+          </ShapeType>
+          <Size>3</Size>
+        </Shape3>
+        <Shape2 Ref="7" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[77:208:225]</Brush>
+          <ClientRectangle>270,160,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape2</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="8" type="Stimulsoft.Report.Components.ShapeTypes.StiSnipSameSideCornerRectangleShapeType" isKey="true" />
+        </Shape2>
+        <Shape4 Ref="9" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[38:198:218]</Brush>
+          <ClientRectangle>400,160,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape4</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="10" type="Stimulsoft.Report.Components.ShapeTypes.StiFlowchartCardShapeType" isKey="true" />
+        </Shape4>
+        <Shape19 Ref="11" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[0:188:212]</Brush>
+          <ClientRectangle>530,160,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape19</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="12" type="Stimulsoft.Report.Components.ShapeTypes.StiSnipDiagonalSideCornerRectangleShapeType" isKey="true" />
+        </Shape19>
+        <Shape5 Ref="13" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[229:57:53]</Brush>
+          <ClientRectangle>10,290,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape5</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="14" type="Stimulsoft.Report.Components.ShapeTypes.StiOvalShapeType" isKey="true" />
+        </Shape5>
+        <Shape6 Ref="15" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[244:67:54]</Brush>
+          <ClientRectangle>140,290,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape6</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="16" type="Stimulsoft.Report.Components.ShapeTypes.StiTriangleShapeType" isKey="true">
+            <Direction>Up</Direction>
+          </ShapeType>
+        </Shape6>
+        <Shape7 Ref="17" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[239:83:80]</Brush>
+          <ClientRectangle>270,290,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape7</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="18" type="Stimulsoft.Report.Components.ShapeTypes.StiFlowchartDecisionShapeType" isKey="true" />
+        </Shape7>
+        <Shape8 Ref="19" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[0:172:193]</Brush>
+          <ClientRectangle>660,160,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape8</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="20" type="Stimulsoft.Report.Components.ShapeTypes.StiFlowchartManualInputShapeType" isKey="true" />
+        </Shape8>
+        <Shape9 Ref="21" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[229:115:115]</Brush>
+          <ClientRectangle>400,290,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape9</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="22" type="Stimulsoft.Report.Components.ShapeTypes.StiTriangleShapeType" isKey="true">
+            <Direction>Down</Direction>
+          </ShapeType>
+        </Shape9>
+        <Shape10 Ref="23" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[220:237:200]</Brush>
+          <ClientRectangle>10,430,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape10</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="24" type="Stimulsoft.Report.Components.ShapeTypes.StiFlowchartOffPageConnectorShapeType" isKey="true">
+            <Direction>Down</Direction>
+          </ShapeType>
+        </Shape10>
+        <Shape11 Ref="25" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[197:225:165]</Brush>
+          <ClientRectangle>140,430,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape11</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="26" type="Stimulsoft.Report.Components.ShapeTypes.StiFlowchartPreparationShapeType" isKey="true">
+            <Direction>Left</Direction>
+          </ShapeType>
+        </Shape11>
+        <Shape12 Ref="27" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[174:213:129]</Brush>
+          <ClientRectangle>270,430,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape12</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="28" type="Stimulsoft.Report.Components.ShapeTypes.StiRegularPentagonShapeType" isKey="true" />
+        </Shape12>
+        <Shape13 Ref="29" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[156:204:101]</Brush>
+          <ClientRectangle>400,430,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape13</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="30" type="Stimulsoft.Report.Components.ShapeTypes.StiTrapezoidShapeType" isKey="true" />
+        </Shape13>
+        <Shape14 Ref="31" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[139:195:74]</Brush>
+          <ClientRectangle>530,430,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape14</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="32" type="Stimulsoft.Report.Components.ShapeTypes.StiFlowchartSortShapeType" isKey="true" />
+        </Shape14>
+        <Shape15 Ref="33" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[255:205:210]</Brush>
+          <ClientRectangle>660,290,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape15</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="34" type="Stimulsoft.Report.Components.ShapeTypes.StiFrameShapeType" isKey="true" />
+        </Shape15>
+        <Shape16 Ref="35" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[239:154:154]</Brush>
+          <ClientRectangle>530,290,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape16</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="36" type="Stimulsoft.Report.Components.ShapeTypes.StiParallelogramShapeType" isKey="true" />
+        </Shape16>
+        <Shape17 Ref="37" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[124:179:66]</Brush>
+          <ClientRectangle>660,430,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape17</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="38" type="Stimulsoft.Report.Components.ShapeTypes.StiFlowchartCollateShapeType" isKey="true">
+            <Direction>Down</Direction>
+          </ShapeType>
+        </Shape17>
+        <Shape18 Ref="39" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[142:36:170]</Brush>
+          <ClientRectangle>10,560,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape18</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="40" type="Stimulsoft.Report.Components.ShapeTypes.StiArrowShapeType" isKey="true">
+            <Direction>Left</Direction>
+          </ShapeType>
+        </Shape18>
+        <Shape20 Ref="41" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[156:39:176]</Brush>
+          <ClientRectangle>140,560,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape20</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="42" type="Stimulsoft.Report.Components.ShapeTypes.StiArrowShapeType" isKey="true">
+            <Direction>Up</Direction>
+          </ShapeType>
+        </Shape20>
+        <Shape21 Ref="43" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[171:71:188]</Brush>
+          <ClientRectangle>270,560,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape21</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="44" type="Stimulsoft.Report.Components.ShapeTypes.StiArrowShapeType" isKey="true">
+            <Direction>Right</Direction>
+          </ShapeType>
+        </Shape21>
+        <Shape22 Ref="45" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[186:104:200]</Brush>
+          <ClientRectangle>400,560,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape22</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="46" type="Stimulsoft.Report.Components.ShapeTypes.StiArrowShapeType" isKey="true">
+            <Direction>Down</Direction>
+          </ShapeType>
+        </Shape22>
+        <Shape24 Ref="47" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[225:190:231]</Brush>
+          <ClientRectangle>660,560,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape24</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="48" type="Stimulsoft.Report.Components.ShapeTypes.StiComplexArrowShapeType" isKey="true">
+            <Direction>Up</Direction>
+          </ShapeType>
+        </Shape24>
+        <Shape25 Ref="49" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[250:206:170]</Brush>
+          <ClientRectangle>10,700,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape25</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="50" type="Stimulsoft.Report.Components.ShapeTypes.StiPlusShapeType" isKey="true" />
+        </Shape25>
+        <Shape26 Ref="51" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[250:206:170]</Brush>
+          <ClientRectangle>140,700,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape26</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="52" type="Stimulsoft.Report.Components.ShapeTypes.StiMinusShapeType" isKey="true" />
+        </Shape26>
+        <Shape27 Ref="53" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[247:181:128]</Brush>
+          <ClientRectangle>270,700,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape27</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="54" type="Stimulsoft.Report.Components.ShapeTypes.StiMultiplyShapeType" isKey="true" />
+        </Shape27>
+        <Shape28 Ref="55" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[247:181:128]</Brush>
+          <ClientRectangle>400,700,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape28</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="56" type="Stimulsoft.Report.Components.ShapeTypes.StiDivisionShapeType" isKey="true" />
+        </Shape28>
+        <Shape29 Ref="57" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[183:117:64]</Brush>
+          <ClientRectangle>530,700,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape29</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="58" type="Stimulsoft.Report.Components.ShapeTypes.StiEqualShapeType" isKey="true" />
+        </Shape29>
+        <Shape30 Ref="59" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[183:117:64]</Brush>
+          <ClientRectangle>660,700,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape30</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="60" type="Stimulsoft.Report.Components.ShapeTypes.StiBentArrowShapeType" isKey="true">
+            <Direction>Up</Direction>
+          </ShapeType>
+        </Shape30>
+        <Shape31 Ref="61" type="Shape" isKey="true">
+          <BorderColor>Transparent</BorderColor>
+          <Brush>[206:147:216]</Brush>
+          <ClientRectangle>530,560,100,100</ClientRectangle>
+          <Conditions isList="true" count="0" />
+          <Name>Shape31</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+          <ShapeType Ref="62" type="Stimulsoft.Report.Components.ShapeTypes.StiChevronShapeType" isKey="true">
+            <Direction>Right</Direction>
+          </ShapeType>
+        </Shape31>
+        <ReportTitleBand2 Ref="63" type="ReportTitleBand" isKey="true">
+          <Brush>Transparent</Brush>
+          <ClientRectangle>0,20,772,99</ClientRectangle>
+          <Components isList="true" count="4">
+            <Text17 Ref="64" type="Text" isKey="true">
+              <Border>None;[0:0:0];1;Solid;False;4;Black</Border>
+              <Brush>[0:0:0:0]</Brush>
+              <CanGrow>True</CanGrow>
+              <ClientRectangle>0,60,560,30</ClientRectangle>
+              <ComponentStyle>Title2</ComponentStyle>
+              <Conditions isList="true" count="0" />
+              <Font>Arial,9</Font>
+              <Guid>c8f457d430be4bd1af6565fa99f4cde5</Guid>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text17</Name>
+              <Page isRef="2" />
+              <Parent isRef="63" />
+              <Text>{ReportDescription}</Text>
+              <TextBrush>[69:90:100]</TextBrush>
+              <TextOptions>,,,,WordWrap=True,A=0</TextOptions>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text17>
+            <Text18 Ref="65" type="Text" isKey="true">
+              <Border>None;[0:0:0];1;Solid;False;4;Black</Border>
+              <Brush>[0:0:0:0]</Brush>
+              <CanGrow>True</CanGrow>
+              <ClientRectangle>560,60,207,30</ClientRectangle>
+              <ComponentStyle>Title2</ComponentStyle>
+              <Conditions isList="true" count="0" />
+              <Font>Arial,9</Font>
+              <Guid>4f76817837374685b9df1f5421bb4cda</Guid>
+              <HorAlignment>Right</HorAlignment>
+              <Margins>0,0,0,0</Margins>
+              <Name>Text18</Name>
+              <Page isRef="2" />
+              <Parent isRef="63" />
+              <Text>Date: {Today.ToString("Y")}</Text>
+              <TextBrush>[69:90:100]</TextBrush>
+              <TextOptions>,,,,WordWrap=True,A=0</TextOptions>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text18>
+            <Text20 Ref="67" type="Text" isKey="true">
+              <Border>None;[0:0:0:0];1;Solid;False;4;Black</Border>
+              <Brush>[96:125:139]</Brush>
+              <ClientRectangle>0,0,767,60</ClientRectangle>
+              <ComponentStyle>Title1</ComponentStyle>
+              <Conditions isList="true" count="0" />
+              <Font>Arial,19</Font>
+              <Guid>718236e7024c44edaa517cc8aec0eefb</Guid>
+              <HorAlignment>Right</HorAlignment>
+              <Margins>0,10,0,0</Margins>
+              <Name>Text20</Name>
+              <Page isRef="2" />
+              <Parent isRef="63" />
+              <Text>RTS Automation</Text>
+              <TextBrush>[255:255:255]</TextBrush>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text20>
+            <Text23 Ref="68" type="Text" isKey="true">
+              <Border>Left;[178:223:219];5;Solid;False;4;[0:0:0]</Border>
+              <Brush>[96:125:139]</Brush>
+              <ClientRectangle>20,10,370,40</ClientRectangle>
+              <ComponentStyle>Title1</ComponentStyle>
+              <Conditions isList="true" count="0" />
+              <Font>Arial,19</Font>
+              <Guid>4beff844a0b8434c8e52dc3897d07cff</Guid>
+              <Margins>10,0,0,0</Margins>
+              <Name>Text23</Name>
+              <Page isRef="2" />
+              <Parent isRef="63" />
+              <Text>Shapes</Text>
+              <TextBrush>[255:255:255]</TextBrush>
+              <Type>Expression</Type>
+              <VertAlignment>Center</VertAlignment>
+            </Text23>
+          </Components>
+          <Conditions isList="true" count="0" />
+          <Guid>1127d071d9be434e80a3ea6e1dbf542e</Guid>
+          <Name>ReportTitleBand2</Name>
+          <Page isRef="2" />
+          <Parent isRef="2" />
+        </ReportTitleBand2>
+      </Components>
+      <Conditions isList="true" count="0" />
+      <Guid>6f2b2cabb01546738f4e441fd2de86dc</Guid>
+      <Margins>39,39,39,39</Margins>
+      <Name>Page1</Name>
+      <PageHeight>1100</PageHeight>
+      <PageWidth>850</PageWidth>
+      <Report isRef="0" />
+      <Watermark Ref="69" type="Stimulsoft.Report.Components.StiWatermark" isKey="true">
+        <Font>Arial,100</Font>
+        <TextBrush>[50:0:0:0]</TextBrush>
+      </Watermark>
+    </Page1>
+  </Pages>
+  <PreviewMode>StandardAndDotMatrix</PreviewMode>
+  <PreviewSettings>33538047</PreviewSettings>
+  <PrinterSettings Ref="70" type="Stimulsoft.Report.Print.StiPrinterSettings" isKey="true" />
+  <ReferencedAssemblies isList="true" count="8">
+    <value>System.Dll</value>
+    <value>System.Drawing.Dll</value>
+    <value>System.Windows.Forms.Dll</value>
+    <value>System.Data.Dll</value>
+    <value>System.Xml.Dll</value>
+    <value>Stimulsoft.Base.Dll</value>
+    <value>Stimulsoft.Controls.Dll</value>
+    <value>Stimulsoft.Report.Dll</value>
+  </ReferencedAssemblies>
+  <ReportAlias>Shapes</ReportAlias>
+  <ReportAuthor isNull="true" />
+  <ReportChanged>12/8/2015 2:30:02 PM</ReportChanged>
+  <ReportCreated>5/29/2004 10:59:00 AM</ReportCreated>
+  <ReportDescription>The sample demonstrates how to create a report with shapes.</ReportDescription>
+  <ReportFile />
+  <ReportGuid>cd7e48437cc346d28adaf6795ec5d216</ReportGuid>
+  <ReportName>Report</ReportName>
+  <ReportUnit>HundredthsOfInch</ReportUnit>
+  <ReportVersion>2015.3.0</ReportVersion>
+  <Script>using System;
+using System.Drawing;
+using System.Windows.Forms;
+using System.Data;
+using Stimulsoft.Report;
+using Stimulsoft.Report.Components;
+using Stimulsoft.Base.Drawing;
+
+namespace StiReports
+{
+    
+    public class Report : Stimulsoft.Report.StiReport
+    {
+        
+        public Report()
+        {
+            this.InitializeComponent();
+        }
+        
+        #region StiReport Designer generated code - do not modify
+		#endregion StiReport Designer generated code - do not modify
+    }
+}</Script>
+  <ScriptLanguage>CSharp</ScriptLanguage>
+  <Styles isList="true" count="10">
+    <Title1 Ref="71" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderFormatting>False</AllowUseBorderFormatting>
+      <AllowUseBorderSides>False</AllowUseBorderSides>
+      <Border>None;[0:0:0:0];1;Solid;False;4;Black</Border>
+      <Brush>[96:125:139]</Brush>
+      <CollectionName>Style</CollectionName>
+      <Conditions isList="true" count="0" />
+      <Font>Arial,19</Font>
+      <HorAlignment>Right</HorAlignment>
+      <Name>Title1</Name>
+      <TextBrush>[255:255:255]</TextBrush>
+      <VertAlignment>Center</VertAlignment>
+    </Title1>
+    <Title2 Ref="72" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderFormatting>False</AllowUseBorderFormatting>
+      <AllowUseBorderSides>False</AllowUseBorderSides>
+      <Border>None;[0:0:0];1;Solid;False;4;Black</Border>
+      <Brush>[0:0:0:0]</Brush>
+      <CollectionName>Style</CollectionName>
+      <Conditions isList="true" count="0" />
+      <Font>Arial,9</Font>
+      <Name>Title2</Name>
+      <TextBrush>[69:90:100]</TextBrush>
+      <VertAlignment>Center</VertAlignment>
+    </Title2>
+    <Header1 Ref="73" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSides>False</AllowUseBorderSides>
+      <Border>None;[0:0:0];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Style</CollectionName>
+      <Conditions isList="true" count="0" />
+      <Font>Arial,19</Font>
+      <Name>Header1</Name>
+      <TextBrush>[0:0:0]</TextBrush>
+      <VertAlignment>Center</VertAlignment>
+    </Header1>
+    <Header2 Ref="74" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSides>False</AllowUseBorderSides>
+      <Border>None;[0:0:0];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Style</CollectionName>
+      <Conditions isList="true" count="0" />
+      <Font>Arial,14.25,Bold,Point,False,0</Font>
+      <HorAlignment>Center</HorAlignment>
+      <Name>Header2</Name>
+      <TextBrush>[158:158:158]</TextBrush>
+      <VertAlignment>Center</VertAlignment>
+    </Header2>
+    <Header3 Ref="75" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSides>False</AllowUseBorderSides>
+      <Border>All;[182:182:182];1;Solid;False;4;Black</Border>
+      <Brush>[26:160:148]</Brush>
+      <CollectionName>Style</CollectionName>
+      <Conditions isList="true" count="0" />
+      <Font>Arial,16</Font>
+      <HorAlignment>Center</HorAlignment>
+      <Name>Header3</Name>
+      <TextBrush>[255:255:255]</TextBrush>
+      <VertAlignment>Center</VertAlignment>
+    </Header3>
+    <Data1 Ref="76" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSides>False</AllowUseBorderSides>
+      <Border>None;[182:182:182];1;Solid;False;4;Black</Border>
+      <Brush>[0:0:0:0]</Brush>
+      <CollectionName>Style</CollectionName>
+      <Conditions isList="true" count="0" />
+      <Font>Arial,10</Font>
+      <Name>Data1</Name>
+      <TextBrush>[74:74:74]</TextBrush>
+      <VertAlignment>Center</VertAlignment>
+    </Data1>
+    <Data2 Ref="77" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderFormatting>False</AllowUseBorderFormatting>
+      <AllowUseBorderSides>False</AllowUseBorderSides>
+      <AllowUseFont>False</AllowUseFont>
+      <AllowUseTextBrush>False</AllowUseTextBrush>
+      <AllowUseTextOptions>False</AllowUseTextOptions>
+      <Border>None;[255:255:255];1;Solid;False;4;Black</Border>
+      <Brush>[178:223:219]</Brush>
+      <CollectionName>Style</CollectionName>
+      <Conditions isList="true" count="0" />
+      <Font>Arial,9</Font>
+      <Name>Data2</Name>
+      <TextBrush>[0:0:0]</TextBrush>
+    </Data2>
+    <Data3 Ref="78" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSides>False</AllowUseBorderSides>
+      <Border>None;[255:255:255];1;Solid;False;4;Black</Border>
+      <Brush>[178:223:219]</Brush>
+      <CollectionName>Style</CollectionName>
+      <Conditions isList="true" count="0" />
+      <Font>Arial,9</Font>
+      <Name>Data3</Name>
+      <TextBrush>[0:0:0]</TextBrush>
+      <VertAlignment>Center</VertAlignment>
+    </Data3>
+    <Footer1 Ref="79" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSides>False</AllowUseBorderSides>
+      <Border>Top;[58:78:94];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Style</CollectionName>
+      <Conditions isList="true" count="0" />
+      <Font>Arial,9</Font>
+      <Name>Footer1</Name>
+      <TextBrush>[0:0:0]</TextBrush>
+      <VertAlignment>Center</VertAlignment>
+    </Footer1>
+    <Footer2 Ref="80" type="Stimulsoft.Report.StiStyle" isKey="true">
+      <AllowUseBorderSides>False</AllowUseBorderSides>
+      <Border>None;[58:78:94];1;Solid;False;4;Black</Border>
+      <Brush>Transparent</Brush>
+      <CollectionName>Style</CollectionName>
+      <Conditions isList="true" count="0" />
+      <Font>Arial,12,Bold</Font>
+      <HorAlignment>Right</HorAlignment>
+      <Name>Footer2</Name>
+      <TextBrush>[158:158:158]</TextBrush>
+      <VertAlignment>Center</VertAlignment>
+    </Footer2>
+  </Styles>
+</StiSerializer>

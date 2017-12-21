@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+    <link rel="shortcut icon" href="favicon.ico"/>
+    <meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+    <title>Stimulsoft Reports.JS</title>
+    <script id="sap-ui-bootstrap" src="https://sapui5.netweaver.ondemand.com/resources/sap-ui-core.js"
+            data-sap-ui-theme="sap_bluecrystal" data-sap-ui-libs="sap.ui.core,sap.m,sap.ui.commons,sap.ui.table"
+            data-sap-ui-language="en">
+    </script>
+    <link href="css/demo.css" rel="stylesheet">
+    <link href="css/stimulsoft.designer.office2013.whiteteal.css?v=20161205" rel="stylesheet">
+    <link href="css/stimulsoft.viewer.office2013.whiteteal.css?v=20161205" rel="stylesheet">
+    <script type="text/javascript" src="stimulsoft.reports.js"></script>
+    <script type="text/javascript" src="stimulsoft.viewer.js"></script>
+    <script type="text/javascript" src="stimulsoft.designer.js"></script>
+    <script type="text/javascript" src="Reports/demo.js"></script>
+    <!-- Application scripts -->
+
+    <script>
+        var viewer = null;
+        var designer = null;
+        var dataSet = null;
+
+        function createViewer() {
+            // Specify necessary options for the viewer
+            var options = new Stimulsoft.Viewer.StiViewerOptions();
+            options.height = "100%";
+            options.appearance.scrollbarsMode = true;
+            options.toolbar.showDesignButton = true;
+            options.appearance.interfaceType = Stimulsoft.Viewer.StiInterfaceType.Mouse;
+            options.appearance.htmlRenderMode = Stimulsoft.Report.Export.StiHtmlExportMode.Table;
+
+            // Create an instance of the viewer
+            viewer = new Stimulsoft.Viewer.StiViewer(options, "StiViewer", false);
+
+            // Add the design button event
+            viewer.onDesignReport = function (e) {
+                this.visible = false;
+                if (designer == null) {
+                    createDesigner(e);
+                } else {
+                    designer.visible = true;
+                    designer.report = e.report;
+//                    ga('set', {
+//                        page: '/designer_' + designer.report.reportName,
+//                        title: 'Designer ' + designer.report.reportName
+//                    });
+//                    ga('send', 'pageview');
+                }
+            };
+            viewer.renderHtml("viewerContent");
+        }
+
+        function createDesigner(e) {
+            centerWheel(true);
+//            $.getScript("stimulsoft.designer.js", function () {
+//
+//                alert("Script loaded but not necessarily executed.");
+//
+//            });
+//            zip.installJS("designer.zip?v=20161205", ["stimulsoft.designer.js"], function () {
+            hideWhell();
+            var options = new Stimulsoft.Designer.StiDesignerOptions();
+            options.appearance.fullScreenMode = true;
+            options.appearance.interfaceType = Stimulsoft.Designer.StiInterfaceType.Mouse;
+            options.appearance.htmlRenderMode = Stimulsoft.Report.Export.StiHtmlExportMode.Table;
+
+            // Create an instance of the designer
+            designer = new Stimulsoft.Designer.StiDesigner(options, "StiDesigner", false);
+
+            // Add the exit menu item event
+            designer.onExit = function (e) {
+                this.visible = false;
+                viewer.visible = true;
+
+//                ga('set', {
+//                    page: '/viewer_' + viewer.getReportFileName(),
+//                    title: 'Viewer ' + viewer.getReportFileName()
+//                });
+//                ga('send', 'pageview');
+
+            }
+            designer.renderHtml("designerContent");
+            designer.visible = true;
+            designer.report = e.report;
+//            ga('set', {
+//                page: '/designer_' + designer.report.reportName,
+//                title: 'Designer ' + designer.report.reportName
+//            });
+//            ga('send', 'pageview');
+//            });
+        }
+
+        function setReport(reportObject) {
+            // Forcibly show process indicator
+            viewer.showProcessIndicator();
+
+            // Timeout need for immediate display loading report indicator
+//            setTimeout(function () {
+            // Create a new report instance
+            var report = new Stimulsoft.Report.StiReport();
+            // Load reports from JSON object
+            report.loadFile("Reports/" + reportObject.id + ".mrt");
+            // Remove all connections from the report template
+            report.dictionary.databases.clear();
+            // Register DataSet object
+            report.regData("Demo", "Demo", dataSet);
+
+            // Assign the report to the viewer
+            viewer.report = report;
+
+//                ga('set', {
+//                    page: '/viewer_' + viewer.getReportFileName(),
+//                    title: 'Viewer ' + viewer.getReportFileName()
+//                });
+//                ga('send', 'pageview');
+//            }, 50);
+        }
+
+        // Set report button style
+        function setReportButton(button) {
+            for (var reportName in reportsCollection) {
+                var reportButton = document.getElementById(reportName);
+                reportButton.isSelected = reportButton == button;
+                reportButton.className = reportButton.isSelected ? "ReportButton Selected" : "ReportButton";
+            }
+        }
+
+        function onBodyLoad() {
+//            var js = {};
+            window.addEventListener("resize", function (event) {
+                centerWheel(false);
+            });
+            centerWheel(true);
+//            $.getScript("stimulsoft.designer.js", function () {
+
+//            zip.installJS("lib.zip?v=20161205", ["stimulsoft.reports.js", "stimulsoft.viewer.js", "demo.js"], function () {
+            hideWhell();
+            showViewer();
+//            });
+        }
+
+        // Load first report after the page is loaded
+        function showViewer() {
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/ar.xml", false, "Arabic");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/be.xml", false, "Belarusian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/bg.xml", false, "Bulgarian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/ca-ES.xml", false, "Catalan");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/cs.xml", false, "Czech");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/de.xml", false, "Deutsch");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/el-GR.xml", false, "Greek");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/es.xml", false, "Spanish");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/eu-ES.xml", false, "Basque");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/fa.xml", false, "Farsi");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/fr.xml", false, "French");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/gl-ES.xml", false, "Galician");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/hr.xml", false, "Croatian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/hu.xml", false, "Hungarian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/id.xml", false, "Indonesian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/it.xml", false, "Italian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/ka.xml", false, "Georgian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/Lt-sr-SP.xml", false, "Serbian (Latin)");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/lt.xml", false, "Lithuanian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/nb-NO.xml", false, "Norwegian (Bokmål)");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/nl.xml", false, "Dutch");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/pl.xml", false, "Polish");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/pt-BR.xml", false, "Portuguese (Brazil)");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/ro.xml", false, "Romanian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/ru.xml", false, "Russian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/sk.xml", false, "Slovak");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/sv.xml", false, "Swedish");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/tr.xml", false, "Turkish");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/uk.xml", false, "Ukrainian");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/zh-CHS.xml", false, "Chinese (Simplified)");
+            Stimulsoft.Base.Localization.StiLocalization.addLocalizationFile("Localizations/zh-CHT.xml", false, "Chinese (Traditional)");
+
+            // Create new DataSet object
+            dataSet = new Stimulsoft.System.Data.DataSet("Demo");
+            // Load JSON data file from specified URL to the DataSet object
+            dataSet.readJson(demoData);
+
+            createViewer();
+            selectedButton = document.getElementById("OnlineStoreSales");
+            onButtonClick(selectedButton, OnlineStoreSales);
+        }
+
+        function onButtonClick(button, reportObject) {
+            selectedButton.className = "ReportButton";
+            button.className = "ReportButton Selected";
+            selectedButton = button;
+            setReport(reportObject);
+        }
+
+        function onButtonMouseOver(button) {
+            if (button != selectedButton) button.className = "ReportButton Over";
+        }
+
+        function onButtonMouseOut(button) {
+            if (button != selectedButton) button.className = "ReportButton";
+        }
+
+        function centerWheel(show) {
+            //document.getElementById("load_wheel").style.left = (document.getElementById("stLeftPanel").offsetWidth +
+            //			(window.innerWidth - document.getElementById("stLeftPanel").offsetWidth) / 2 - 36) + "px";
+            document.getElementById("load_wheel").style.left = (window.innerWidth / 2 - 36) + "px";
+            if (show) showWhell();
+        }
+
+        function showWhell() {
+            document.getElementById("load_wheel").style.display = "";
+        }
+
+        function hideWhell() {
+            document.getElementById("load_wheel").style.display = "none";
+        }
+    </script>
+    <!--<script type="text/javascript">-->
+    <!--(function (i, s, o, g, r, a, m) {-->
+    <!--i['GoogleAnalyticsObject'] = r;-->
+    <!--i[r] = i[r] || function () {-->
+    <!--(i[r].q = i[r].q || []).push(arguments)-->
+    <!--}, i[r].l = 1 * new Date();-->
+    <!--a = s.createElement(o),-->
+    <!--m = s.getElementsByTagName(o)[0];-->
+    <!--a.async = 1;-->
+    <!--a.src = g;-->
+    <!--m.parentNode.insertBefore(a, m)-->
+    <!--})(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');-->
+    <!--ga('create', 'UA-365390-3', 'auto');-->
+    <!--//ga('send', 'pageview');-->
+    <!--</script>-->
+</head>
+<body onload="onBodyLoad();">
+<div class="js_loader" id="load_wheel" style="position:absolute;z-index:70000;top:254px;display:none"></div>
+<div id="designerContent"></div>
+<table class="Main" cellpadding="0" cellspacing="4">
+    <tr>
+        <td width="150px" id="stLeftPanel">
+            <table class="LeftPanel" cellpadding="0" cellspacing="0">
+                <tr>
+                    <td height="60px">
+                        <img style="position: absolute; width: 150px; left: 0px; top: 5px;"
+                             src="images/StimulsoftReports.png"/>
+                        <img style="position: absolute; width: 30px; height: 30px; left: 105px; top: 25px;"
+                             src="images/Js.png"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td height="90%">
+                        <div class="Buttons">
+                            <script type="text/javascript">
+                                // Report id and names for this Demo
+                                var reportsCollection = {
+                                    "SimpleList": "Simple List",
+                                    "OnlineStoreSales": "Online Store Sales",
+                                    "SiteStatistics": "Site Statistics",
+                                    "UsersAppleIpad": "Users Apple iPad",
+                                    "TwoSimpleLists": "Two Simple Lists",
+                                    "HighlightCondition": "Highlight Condition",
+                                    "Shapes": "Shapes",
+                                    "Images": "Images",
+                                    "Indicators": "Indicators",
+                                    "BarCodes": "Bar-Codes",
+                                    "MasterDetail": "Master Detail",
+                                    "ParametersHighlightCondition": "Parameters Highlight Condition",
+                                    "ParametersSelectingCountry": "Parameters Selecting Country"
+                                };
+
+                                // Render all report buttons
+                                for (var reportName in reportsCollection) {
+                                    document.write(
+                                        "<a class=\"ReportButton\" id=\"" + reportName + "\"" +
+                                        "onmouseover=\"onButtonMouseOver(this)\"" +
+                                        "onmouseout=\"onButtonMouseOut(this)\"" +
+                                        "onclick=\"onButtonClick(this, " + reportName + ")\">" +
+                                        "<table cellpadding=\"0\" cellspacing=\"0\">" +
+                                        "<tr><td style=\"text-align: center; width: 100%;\"><img src=\"images/" + reportName + ".png\" /></td></tr>" +
+                                        "<tr><td class=\"Caption\">" + reportsCollection[reportName] + "</td></tr>" +
+                                        "</table>" +
+                                        "</a>");
+                                }
+                            </script>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </td>
+        <td height="100%" id="viewerContent"></td>
+    </tr>
+</table>
+</body>
+</html>

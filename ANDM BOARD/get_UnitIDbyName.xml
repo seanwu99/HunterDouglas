@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Rowsets CachedTime="" DateCreated="2017-12-18T17:02:53" EndDate="2017-12-18T17:02:53" StartDate="2017-12-18T16:02:53"
+         Version="15.0 SP7 Patch 15 (Oct 3, 2016)">
+    <Rowset>
+        <Columns>
+            <Column Description="recordID" MaxRange="1" MinRange="0" Name="recordID" SQLDataType="-5"
+                    SourceColumn="recordID"/>
+            <Column Description="unitSAPID" MaxRange="1" MinRange="0" Name="unitSAPID" SQLDataType="-9"
+                    SourceColumn="unitSAPID"/>
+            <Column Description="unitName" MaxRange="1" MinRange="0" Name="unitName" SQLDataType="-9"
+                    SourceColumn="unitName"/>
+            <Column Description="unitDescr" MaxRange="1" MinRange="0" Name="unitDescr" SQLDataType="-9"
+                    SourceColumn="unitDescr"/>
+        </Columns>
+        <Row>
+            <recordID>8</recordID>
+            <unitSAPID>1604</unitSAPID>
+            <unitName>CS_JL_RR</unitName>
+            <unitDescr>CENTER SECTION JL REAR</unitDescr>
+        </Row>
+    </Rowset>
+</Rowsets>
