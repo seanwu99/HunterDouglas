@@ -1,0 +1,1504 @@
+<!DOCTYPE html >
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <title>RTS NRG</title>
+    <link rel="stylesheet" type="text/css" href="Common/js/jquerydatetimepicker/jquery.datetimepicker.css"/>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0px;
+        }
+
+        body {
+            /*background-image: url("Common/img/logo.png");*/
+            background-size: 120px;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: right 40px top 25px;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        div.inline {
+            float: left;
+        }
+
+        .clearBoth {
+            clear: both;
+        }
+
+        #app_header {
+            padding: 10px;
+            padding-left: 40px;
+            padding-top: 15px;
+            padding-bottom: 0px;
+            height: 80px;
+            width: 400px;
+            text-align: center;
+        }
+
+        #app_tabs {
+            position: absolute;
+            top: 25px;
+            left: 440px;
+            height: 90px;
+            width: 1440px;
+            text-align: center;
+            border: 1px solid #fff;
+        }
+
+        #app_title {
+            width: 400px;
+            text-align: center;
+            font-family: "Arial Black", Arial, Helvetica, sans-serif;
+            font-size: 32px;
+            color: #007dc0;
+            margin-bottom;
+            20px;
+        }
+
+        #app_menu {
+            width: 400px;
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        #page_title {
+            width: 400px;
+            text-align: center;
+            font-family: "Arial Black", Arial, Helvetica, sans-serif;
+            font-size: 28px;
+            color: #cfcfcf;
+        }
+
+        #nrgmap {
+            padding: 30px;
+            padding-top: 0px;
+            height: calc(100% - 165px);
+            height: -o-calc(100% - 165px); /* opera */
+            height: -webkit-calc(100% - 165px); /* google, safari */
+            height: -moz-calc(100% - 165px); /* firefox */
+            overflow: auto;
+        }
+
+        #__button0, #__button1, #__button2 {
+            margin-top: 10px;
+            margin-left: 5px;
+            margin-right: 5px;
+            width: 125px;
+        }
+
+        #MatrixCB {
+            border-bottom: 0px solid #333;
+        }
+
+        #TF-ValidFromM {
+            text-align: center;
+        }
+
+        #MatrixMail {
+            margin: 10px auto;
+        }
+
+        #L-MailInfo {
+            margin-top: 25px;
+            padding: 5px;
+            font-family: "Arial Black", Arial, Helvetica, sans-serif;
+            font-size: 32px;
+            height: 40px;
+            color: #007dc0;
+        }
+
+        #__cell7 {
+            height: 38px;
+            text-align: center;
+        }
+
+        #__cell8, #__cell9, #__cell14 {
+            text-align: center;
+        }
+
+        #__cell10 {
+            text-align: right;
+        }
+
+        #B-SendMail {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            width: 200px;
+            height: 35px;
+            font-size: 14px;
+        }
+
+        @media print {
+            .no-print, .no-print * {
+                display: none !important;
+            }
+
+            .do-print, .do-print * {
+                display: block !important;
+            }
+        }
+    </style>
+    <script id="sap-ui-bootstrap"
+            src="https://sapui5.hana.ondemand.com/resources/sap-ui-core.js"
+            data-sap-ui-theme="sap_goldreflection"
+            data-sap-ui-libs="sap.ui.core,sap.ui.commons,sap.ui.table,sap.ui.ux3"
+            data-sap-ui-language="en">
+    </script>
+
+    <script type="text/javascript" src="Common/js/default.js"></script>
+
+    <script src="Common/js/highcharts/highcharts.js"></script>
+    <script src="Common/js/highcharts/highcharts-more.js"></script>
+    <script src="Common/js/highcharts/solid-gauge.js"></script>
+    <script src="Common/js/highcharts/modules/data.js"></script>
+    <script src="Common/js/highcharts/map.js"></script>
+    <script src="Common/js/highcharts/drilldown.js"></script>
+    <script src="Common/js/highcharts/mapdata/countries/us/us-all.js"></script>
+    <script src="Common/js/jquerydatetimepicker/build/jquery.datetimepicker.full.js"></script>
+
+    <script type="text/javascript" id="app-init">
+
+        var oCore = sap.ui.getCore();
+
+        // ****************************************************************************************************************************************************
+        function roleSecurity() {
+            ISWS = (window.location.href.indexOf('http://localhost') >= 0);
+            var myRoles = document.getElementById("user_roles").value;
+            var role2Access = "NRGM_" + document.getElementById("user_role").value;
+            // alert(role2Access + " -- " + myRoles.indexOf(role2Access));
+            if (!ISWS && myRoles.indexOf(role2Access) < 0) {
+                window.location.assign("Security.irpt");
+            } else {
+                // WHAT IF
+                document.getElementById("page_title").innerHTML = role2Access;
+                if (document.getElementById("user_role").value == "ADM_ALL") {
+                    //Attach the MenuButton to the page
+                    document.getElementById("page_title").innerHTML = "ADMINISTRATOR";
+                    oMenuButton1.placeAt("app_menu");
+                    // oMenuButton2.placeAt("app_menu");
+                    oMenuButton3.placeAt("app_menu");
+                    updateUOM();
+                } else {
+                    //Attach the MenuButton to the page
+                    if (document.getElementById("user_role").value == "ALL") {
+                        document.getElementById("page_title").innerHTML = "ALL UNITS ";
+                    } else {
+                        document.getElementById("page_title").innerHTML = "UNIT " + document.getElementById("user_role").value;
+                    }
+                    oMenuButton3.placeAt("app_menu");
+                }
+            }
+            // dispatch matrices
+            oMatrixMain.placeAt("nrg_content");
+        }
+
+        // ****************************************************************************************************************************************************
+        // Create a MenuButton Control
+        var oMenuButton1 = new sap.ui.commons.MenuButton({
+            text: "Settings",
+            icon: "Common/img/map.png",
+            tooltip: "Energy Tech Settings"
+        });
+        var oMenuButton2 = new sap.ui.commons.MenuButton({
+            text: "Actions",
+            icon: "Common/img/cloud.png",
+            tooltip: "Energy Tech Actions"
+        });
+        var oMenuButton3 = new sap.ui.commons.MenuButton({
+            text: "Reports",
+            icon: "Common/img/list.png",
+            tooltip: "Energy Reports"
+        });
+
+        // Create the menu
+        var oMenu1 = new sap.ui.commons.Menu("menu1", {
+            ariaDescription: "Application Setup",
+            tooltip: "Set Up Landscape"
+        });
+        // Create the items and add them to the menu
+        var oMenuItem1 = new sap.ui.commons.MenuItem("item1-1-1", {text: "Cost Centers"});
+        oMenu1.addItem(oMenuItem1);
+        var oMenuItem2 = new sap.ui.commons.MenuItem("item1-1-2", {text: "Utilities Data"});
+        oMenu1.addItem(oMenuItem2);
+        var oMenuItem7 = new sap.ui.commons.MenuItem("item1-1-7", {text: "HOEP Data"});
+        oMenu1.addItem(oMenuItem7);
+        var oMenuItem3 = new sap.ui.commons.MenuItem("item1-1-3", {text: "Weather Data"});
+        oMenu1.addItem(oMenuItem3);
+        var oMenuItem4 = new sap.ui.commons.MenuItem("item1-1-4", {text: "Meters & Data Points"});
+        oMenu1.addItem(oMenuItem4);
+        var oMenuItem5 = new sap.ui.commons.MenuItem("item1-1-5", {text: "Meter Readings"});
+        oMenu1.addItem(oMenuItem5);
+        var oMenuItem6 = new sap.ui.commons.MenuItem("item1-1-6", {text: "Units Of Measure"});
+        oMenu1.addItem(oMenuItem6);
+        var oMenuItem30 = new sap.ui.commons.MenuItem("item1-1-30", {text: "User Preferences", enabled: false});
+        // oMenu1.addItem(oMenuItem30);
+
+        // Create the menu
+        var oMenu4 = new sap.ui.commons.Menu("menu4", {ariaDescription: "NRG Actions", tooltip: "NRG Actions"});
+        // Create the items and add them to the menu
+        var oMenuItem41 = new sap.ui.commons.MenuItem("item2-0-1", {text: "Alert Subscriptions", enabled: false});
+        oMenu4.addItem(oMenuItem41);
+        var oMenuItem42 = new sap.ui.commons.MenuItem("item2-0-2", {text: "Report Subscriptions", enabled: false});
+        oMenu4.addItem(oMenuItem42);
+        var oMenuItem43 = new sap.ui.commons.MenuItem("item2-0-3", {text: "Price Forecast"});
+        oMenu4.addItem(oMenuItem43);
+        var oMenuItem44 = new sap.ui.commons.MenuItem("item2-0-4", {text: "Budget Forecast"});
+        oMenu4.addItem(oMenuItem44);
+        var oMenuItem45 = new sap.ui.commons.MenuItem("item2-0-5", {text: "Bill Data Import"});
+        oMenu4.addItem(oMenuItem45);
+        var oMenuItem46 = new sap.ui.commons.MenuItem("item2-0-6", {text: "Action History Log", enabled: false});
+        oMenu4.addItem(oMenuItem46);
+
+        // Create the menu
+        var oMenu5 = new sap.ui.commons.Menu("menu5", {ariaDescription: "NRG Reports", tooltip: "NRG Reports"});
+        // Create the items and add them to the menu
+        var oMenuItem51 = new sap.ui.commons.MenuItem("item3-0-1", {text: "Real Time Use"});
+        oMenu5.addItem(oMenuItem51);
+        var oMenuItem52 = new sap.ui.commons.MenuItem("item3-0-2", {text: "Daily Energy Report"});
+        oMenu5.addItem(oMenuItem52);
+        var oMenuItem53 = new sap.ui.commons.MenuItem("item3-0-3", {text: "Monthly Energy Report"});
+        oMenu5.addItem(oMenuItem53);
+        var oMenuItem54 = new sap.ui.commons.MenuItem("item3-0-4", {text: "Daily Occupancy Report"});
+        oMenu5.addItem(oMenuItem54);
+        var oMenuItem55 = new sap.ui.commons.MenuItem("item3-0-5", {text: "Monthly Occupancy Report"});
+        oMenu5.addItem(oMenuItem55);
+        var oMenuItem56 = new sap.ui.commons.MenuItem("item3-0-6", {text: "Daily Energy Intensity Report"});
+        oMenu5.addItem(oMenuItem56);
+        var oMenuItem57 = new sap.ui.commons.MenuItem("item3-0-7", {text: "Monthly Energy Intensity Report"});
+        oMenu5.addItem(oMenuItem57);
+        var oMenuItem58 = new sap.ui.commons.MenuItem("item3-0-8", {text: "Energy Map - Aggregates"});
+        oMenu5.addItem(oMenuItem58);
+
+        //Attach the Menu to the MenuButton
+        oMenuButton1.setMenu(oMenu1);
+        oMenuButton2.setMenu(oMenu4);
+        oMenuButton3.setMenu(oMenu5);
+
+        //Attach an event to raise an alert when an item is selected (Button 1)
+        oMenuButton1.attachItemSelected(function (oEvent) {
+            switch (oEvent.getParameter("itemId")) {
+                case "item1-1-1":
+                    document.location.href = 'Facilities.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item1-1-2":
+                    document.location.href = 'Utilities.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item1-1-3":
+                    document.location.href = 'WeatherDaily.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item1-1-4":
+                    document.location.href = 'Meters.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item1-1-5":
+                    document.location.href = 'MeterReadings.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item1-1-6":
+                    document.location.href = 'UnitsOfMeasure.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item1-1-7":
+                    document.location.href = 'HoepData.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                default:
+                    // alert("Items \"" + oEvent.getParameter("itemId") + "\" was selected.");
+                    break;
+            }
+        });
+
+        //Attach an event to raise an alert when an item is selected. (Button 2)
+        oMenuButton2.attachItemSelected(function (oEvent) {
+            switch (oEvent.getParameter("itemId")) {
+                case "item2-0-3":
+                    document.location.href = 'PriceForecast.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item2-0-4":
+                    document.location.href = 'Budget.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item2-0-5":
+                    document.location.href = 'DataImport.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                default:
+                    alert("Items \"" + oEvent.getParameter("itemId") + "\" was selected.");
+                    break;
+            }
+        });
+
+        //Attach an event to raise an alert when an item is selected. (Button 3)
+        oMenuButton3.attachItemSelected(function (oEvent) {
+            switch (oEvent.getParameter("itemId")) {
+                case "item3-0-1":
+                    document.location.href = 'NRGM.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item3-0-2":
+                    document.location.href = 'DailyReport.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item3-0-3":
+                    document.location.href = 'MonthlyReport.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item3-0-4":
+                    document.location.href = 'DailyProduction.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item3-0-5":
+                    document.location.href = 'MonthlyProduction.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item3-0-6":
+                    document.location.href = 'DailyIntensity.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item3-0-7":
+                    document.location.href = 'MonthlyIntensity.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                case "item3-0-8":
+                    document.location.href = 'NRGMap.irpt?ROLE=' + document.getElementById("user_role").value;
+                    break;
+                default:
+                    alert("Items \"" + oEvent.getParameter("itemId") + "\" was selected.");
+                    break;
+            }
+        });
+        // ****************************************************************************************************************************************************
+        // define main matrix
+        var oMatrixMain = new sap.ui.commons.layout.MatrixLayout({
+            id: 'matrixMain',
+            layoutFixed: true,
+            columns: 1,
+            widths: ['1400px']
+        });
+        var oMatrixCB = new sap.ui.commons.layout.MatrixLayout({
+            id: 'MatrixCB',
+            layoutFixed: true,
+            columns: 6,
+            widths: ['800px', '100px', '100px', '100px', '180px', '100px']
+        });
+
+        var oLabelSpace1 = new sap.ui.commons.Label({
+            id: 'L-Space1',
+            visible: true,
+            text: ' '
+        });
+
+        var oBtnPrint = new sap.ui.commons.Button({
+            id: 'B-Print',
+            tooltip: 'Print Map Aggregates Report',
+            width: '90px',
+            text: 'Print'
+        });
+        oBtnPrint.attachPress(doPrintReport);
+
+        var oBtnEmail = new sap.ui.commons.Button({
+            id: 'B-Email',
+            tooltip: 'eMail Map Aggregates Report',
+            width: '90px',
+            text: 'eMail'
+        });
+        oBtnEmail.attachPress(doEmailReport);
+
+        var oDropdownBoxUOM = new sap.ui.commons.DropdownBox({
+            id: "cbUOM",
+            tooltip: 'UOM',
+            editable: true,
+            width: '90px',
+            change: function (oEvent) {
+                selectedUOM = oEvent.oSource.getSelectedKey();
+            }
+        });
+
+        // *****************************************************************************************************************************
+        function updateUOM() {
+            var timestamp = new Date().getTime();
+            getData("/XMII/Illuminator?QueryTemplate=NRGM/DIAGRAMS/QUERIES/getMeterUOM&ts=" + timestamp + "&Content-Type=text/xml", parseJsonUOM);
+
+            function parseJsonUOM(jsondata) {
+                oDropdownBoxUOM.destroyItems();
+                for (var i = 0; i < jsondata.length; i++) {
+                    //alert(jsondata[i]['idType'] + '   ' + jsondata[i]['Type']);
+                    item_key = jsondata[i]['idUOM'];
+                    item_text = jsondata[i]['UOMName'];
+                    oItem = new sap.ui.core.ListItem({
+                        key: item_key,
+                        text: item_text
+                    });
+                    oDropdownBoxUOM.addItem(oItem);
+                    if (i == 0) oDropdownBoxUOM.setSelectedKey(item_key);
+                }
+                updateTime();
+            }
+        }
+
+        // *****************************************************************************************************************************
+        var oTF_ValidFromM = new sap.ui.commons.TextField({
+            id: 'TF-ValidFromM',
+            tooltip: 'TIME STAMP',
+            editable: true,
+            visible: true,
+            width: '138px',
+            change: function (oEvent) {
+                //document.getElementById("nrg_map").innerHTML= "";
+                //strTime = oTF_ValidFromM.getValue();
+                // buildChart();
+            }
+        });
+
+        var oBtn_ValidFromM = new sap.ui.commons.Button({
+            id: 'B-ValidFromM',
+            tooltip: 'TIME STAMP',
+            text: ''
+        });
+
+        oBtn_ValidFromM.setIcon("img/asr_calendar.png");
+        oBtn_ValidFromM.attachPress(doOpenPickerM);
+
+        // *****************************************************************************************************************************
+        function doOpenPickerM(oControlEvent) {
+            $('#TF-ValidFromM').datetimepicker('show');
+        }
+
+        // *****************************************************************************************************************************
+        oBtn_ValidFromM.attachBrowserEvent("mouseover", function () {
+            $('#TF-ValidFromM').datetimepicker({
+                format: 'Y-m-d H:i:s',
+                step: 5,
+                onChangeDateTime: function () {
+                    var d = $('#TF-ValidFromM').val();
+                    oCore.byId('TF-ValidFromM').setValue(d);
+                }
+            });
+        });
+
+        oBtn_ValidFromM.attachBrowserEvent("blur", function () {
+            $('#TF-ValidFromM').datetimepicker({
+                format: 'Y-m-d H:i:s',
+                step: 5,
+                onChangeDateTime: function () {
+                    var d = $('#TF-ValidFromM').val();
+                    oCore.byId('TF-ValidFromM').setValue(d);
+                }
+            });
+        });
+
+        var oLayoutValidFromM = new sap.ui.layout.HorizontalLayout("LayoutValidFromM", {
+            content: [oTF_ValidFromM, oBtn_ValidFromM]
+        });
+
+        var oButtonSubmit = new sap.ui.commons.Button({
+            text: "Submit",
+            tooltip: "Submit",
+            width: '100px',
+            press: function () {
+                document.getElementById("nrg_map").innerHTML = "";
+                strTime = oTF_ValidFromM.getValue();
+                buildChart();
+                drillup_update();
+            }
+        });
+
+        oMatrixCB.createRow(oLabelSpace1, oBtnPrint, oBtnEmail, oDropdownBoxUOM, oLayoutValidFromM, oButtonSubmit);
+        // set Main matrix rows
+        oMatrixMain.createRow(oMatrixCB);
+
+        // ****************************************************************************************************************************************************
+        function doPrintReport() {
+            window.print();
+        }
+
+        // ****************************************************************************************************************************************************
+        // create email overlay
+        var oMatrixMail = new sap.ui.commons.layout.MatrixLayout({
+            id: 'MatrixMail',
+            layoutFixed: true,
+            width: '490px',
+            columns: 1,
+            widths: ['500px']
+        });
+
+        var oMatrixMailF = new sap.ui.commons.layout.MatrixLayout({
+            id: 'MatrixMailF',
+            layoutFixed: true,
+            width: '490px',
+            columns: 3,
+            widths: ['180px', '140px', '170px']
+        });
+
+        var oTitleMail = new sap.ui.commons.Label({
+            id: 'L-MailInfo',
+            text: 'EMAIL INFORMATION'
+        });
+        oMatrixMail.createRow(oTitleMail);
+
+        var oLabelSystemMail = new sap.ui.commons.Label({
+            id: 'L-SysMail',
+            text: ' System Mail : '
+        });
+        oMatrixMail.createRow(oLabelSystemMail);
+
+
+        var oLabelSystemNote = new sap.ui.commons.Label({
+            id: 'L-SysNote',
+            text: ' Messages can be relayed to xxxxxxxxxxx@rtsperfectplant.com addresses only! '
+        });
+        oMatrixMail.createRow(oLabelSystemNote);
+
+        var oLabelRecipient = new sap.ui.commons.Label({
+            id: 'L-Recipient',
+            text: ' Send eMail To  '
+        });
+
+        var oInputRecipient = new sap.ui.commons.TextField('input_recipient');
+        oInputRecipient.setTextAlign(sap.ui.core.TextAlign.Right);
+
+        var oLabelDomain = new sap.ui.commons.Label({
+            id: 'L-Domain',
+            text: ' @rtsperfectplant.com '
+        });
+
+        oMatrixMailF.createRow(oLabelRecipient, oInputRecipient, oLabelDomain);
+        oMatrixMail.createRow(oMatrixMailF);
+
+        var oButtonMail = new sap.ui.commons.Button({
+            id: 'B-SendMail',
+            tooltip: "Send report data via eMail",
+            text: 'SUBMIT',
+            enabled: true
+        });
+        oButtonMail.attachPress(doSendEmail);
+        oMatrixMail.createRow(oButtonMail);
+
+        var oOverlayContainerMail = new sap.ui.ux3.OverlayDialog({openButtonVisible: false});
+        oOverlayContainerMail.setHeight('270px');
+        oOverlayContainerMail.setWidth('700px');
+        oOverlayContainerMail.addContent(oMatrixMail);
+
+        // ****************************************************************************************************************************************************
+        function doEmailReport() {
+            // collect email data
+            var recipient = document.getElementById("user_email").value;
+            recipient = recipient.toLowerCase();
+            var firstname = document.getElementById("user_firstname").value;
+            var lastname = document.getElementById("user_lastname").value;
+            var allname = firstname + "." + lastname;
+            // show email overlay
+            if (!oOverlayContainerMail.isOpen()) {
+                oCore.byId("L-SysMail").setText("System configured eMail address : " + recipient);
+                if (recipient.indexOf("@rtsperfectplant.com") > 0) {
+                    oCore.byId("input_recipient").setValue(recipient);
+                } else {
+                    oCore.byId("input_recipient").setValue(allname.toLowerCase());
+                }
+                oOverlayContainerMail.open();
+            }
+        }
+
+        // ****************************************************************************************************************************************************
+        function doSendEmail() {
+            var queryparam = Number(oCore.byId('cbUOM').getSelectedKey());
+            var queryTime = strTime;
+            var recipient = oCore.byId("input_recipient").getValue() + "@rtsperfectplant.com";
+            var queryTime = strTime;
+
+            // all good - call TRX
+            var oSendMail;
+            if (window.XMLHttpRequest) {
+                oSendMail = new XMLHttpRequest();
+            }
+            if (oSendMail != null) {
+                var timestamp = new Date().getTime();
+                var paramStr = "QueryTime=" + encodeURIComponent(queryTime) + "&QueryParam=" + encodeURIComponent(queryparam) + "&MailRecipient=" + encodeURIComponent(recipient);
+                // alert(paramStr);
+                var queryStr = "/XMII/Runner?Transaction=NRGM/REPORTS/TRANSACTIONS/mailDataRTU&OutputParameter=XML_RESULT&Content-Type=text/xml&" + paramStr + "&ts=" + timestamp;
+                // alert(queryStr);
+                oSendMail.open("GET", queryStr, true);
+                oSendMail.onreadystatechange = function () {
+                    if (oSendMail.readyState == 4)
+                        if (oSendMail.status == 200) {
+                            // Successful -- rebuild the screen
+                            var xmlDOC = oSendMail.responseXML;
+                            if (xmlDOC.getElementsByTagName("TRXRESULT")[0] && xmlDOC.getElementsByTagName("TRXRESULT")[0].childNodes[0]) {
+                                var trxMessage = xmlDOC.getElementsByTagName("TRXRESULT")[0].childNodes[0].nodeValue;
+                                alert(trxMessage);
+                                oOverlayContainerMail.close();
+                            } else {
+                                alert("Please do try again later .. ");
+                            }
+                        } else {
+                            alert("Error: " + oSendMail.statusText);
+                        }
+                }
+                oSendMail.send();
+            } else {
+                window.alert("Error creating XmlHttpRequest object.");
+            }
+        }
+
+        // ****************************************************************************************************************************************************
+    </script>
+    <script type="text/javascript" src="Common/js/default.js"></script>
+    <script type='text/javascript'>//<![CDATA[
+    // ****************************************************************************************************************************************************
+    // Globals
+    var strTime = "";
+    var jsonChartData = "";
+    var selectedUOM = "";
+
+    // ****************************************************************************************************************************************************
+    function updateTime() {
+        var theDate = new Date();
+        var t_year = theDate.getFullYear();
+        var t_mnth = theDate.getMonth() + 1;
+        if (t_mnth < 10) t_mnth = "0" + t_mnth;
+        var t_days = theDate.getDate();
+        if (t_days < 10) t_days = "0" + t_days;
+        var t_hrs = theDate.getHours();
+        if (t_hrs < 10) t_hrs = "0" + t_hrs;
+        var t_mins = theDate.getMinutes();
+        if (t_mins < 10) t_mins = "0" + t_mins;
+        var t_secs = theDate.getSeconds();
+        if (t_secs < 10) t_secs = "0" + t_secs;
+
+        strTime = t_year + "-" + t_mnth + "-" + t_days + " " + t_hrs + ":" + t_mins + ":" + t_secs;
+        oCore.byId('TF-ValidFromM').setValue(strTime);
+        buildChart();
+    }
+
+    // ****************************************************************************************************************************************************
+    function buildChartOne() {
+
+        Highcharts.chart('chart_one', {
+            colors: ['#35776A', '#B4C8C5', '#008000'],
+            data: {
+                table: 'datatable_kwh'
+            },
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Electricity'
+            },
+            yAxis: {
+                min: 0,
+                max: 100,
+                allowDecimals: false,
+                title: {
+                    text: 'MWh'
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        this.point.y + ' MWh ' + this.point.name;
+                }
+            }
+        });
+    }
+
+    // ****************************************************************************************************************************************************
+    function setChartOne() {
+
+        Highcharts.chart('chart_one', {
+            colors: ['#35776A', '#B4C8C5', '#008000'],
+            data: {
+                table: 'datatable_kwh2'
+            },
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Electricity'
+            },
+
+            yAxis: {
+                min: 0,
+                max: 100,
+                allowDecimals: false,
+                title: {
+                    text: 'MWh'
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        this.point.y + ' MWh ' + this.point.name;
+                }
+            }
+        });
+    }
+
+    // ****************************************************************************************************************************************************
+    function buildChartTwo() {
+        Highcharts.chart('chart_two', {
+            colors: ['#35776A', '#B4C8C5', '#008000'],
+            data: {
+                table: 'datatable_cuft'
+            },
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Natural Gas'
+            },
+            yAxis: {
+                min: 0,
+                max: 100,
+                allowDecimals: false,
+                title: {
+                    text: 'MCuFt'
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        this.point.y + ' MCuFt  ' + this.point.name;
+                }
+            }
+        });
+    }
+
+    // ****************************************************************************************************************************************************
+    function setChartTwo() {
+        Highcharts.chart('chart_two', {
+            colors: ['#35776A', '#B4C8C5', '#008000'],
+            data: {
+                table: 'datatable_cuft2'
+            },
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Natural Gas'
+            },
+            yAxis: {
+                min: 0,
+                max: 100,
+                allowDecimals: false,
+                title: {
+                    text: 'MCuFt'
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        this.point.y + ' MCuFt  ' + this.point.name;
+                }
+            }
+        });
+    }
+
+    // ****************************************************************************************************************************************************
+    function buildChartThree() {
+
+        Highcharts.chart('chart_three', {
+            colors: ['#35776A', '#B4C8C5', '#008000'],
+            data: {
+                table: 'datatable_gal'
+            },
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Cold & Hot Water'
+            },
+            yAxis: {
+                min: 0,
+                max: 100,
+                allowDecimals: false,
+                title: {
+                    text: 'Therm'
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        this.point.y + ' Therm ' + this.point.name
+                }
+            }
+        });
+    }
+
+    // ****************************************************************************************************************************************************
+    function setChartThree() {
+        Highcharts.chart('chart_three', {
+            colors: ['#35776A', '#B4C8C5', '#008000'],
+            data: {
+                table: 'datatable_gal2'
+            },
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Cold & Hot Water'
+            },
+            yAxis: {
+                min: 0,
+                max: 100,
+                allowDecimals: false,
+                title: {
+                    text: 'Therm'
+                }
+            },
+            credits: {
+                enabled: false
+            },
+            tooltip: {
+                formatter: function () {
+                    return '<b>' + this.series.name + '</b><br/>' +
+                        this.point.y + ' Therm ' + this.point.name
+                }
+            }
+        });
+    }
+
+    // ****************************************************************************************************************************************************
+    function buildChart() {
+
+        // Side Charts
+        // **************************************************************************
+        buildChartOne();
+        buildChartTwo();
+        buildChartThree();
+        // **************************************************************************
+
+        // **************************************************************************
+        // Main map
+        // **************************************************************************
+
+        // alert("beep");
+        var data = Highcharts.geojson(Highcharts.maps['countries/us/us-all']),
+            // Some responsiveness
+            small = $('#container').width() < 400;
+
+        // Set drilldown pointers
+        $.each(data, function (i) {
+            this.drilldown = this.properties['hc-key'];
+            this.value = i; // Non-random bogus data
+        });
+
+        // Instanciate the map
+        Highcharts.mapChart('container', {
+            chart: {
+                events: {
+                    drilldown: function (e) {
+                        mapID = e.point.drilldown;
+                        drilldown_update(mapID);
+                        if (!e.seriesOptions) {
+                            var chart = this,
+                                mapKey = 'countries/us/' + e.point.drilldown + '-all',
+                                // Handle error, the timeout is cleared on success
+                                fail = setTimeout(function () {
+                                    if (!Highcharts.maps[mapKey]) {
+                                        chart.showLoading('<i class="icon-frown"></i> Failed loading ' + e.point.name);
+
+                                        fail = setTimeout(function () {
+                                            chart.hideLoading();
+                                        }, 1000);
+                                    }
+                                }, 3000);
+
+                            // Show the spinner
+                            chart.showLoading('<i class="icon-spinner icon-spin icon-3x"></i>'); // Font Awesome spinner
+
+                            // Load the drilldown map
+                            $.getScript('https://code.highcharts.com/mapdata/' + mapKey + '.js', function () {
+
+                                data = Highcharts.geojson(Highcharts.maps[mapKey]);
+
+                                // Set a non-random bogus value
+                                $.each(data, function (i) {
+                                    this.value = i;
+                                });
+
+                                // Hide loading and add series
+                                chart.hideLoading();
+                                clearTimeout(fail);
+                                chart.addSeriesAsDrilldown(e.point, {
+                                    name: e.point.name,
+                                    data: data,
+                                    dataLabels: {
+                                        enabled: true,
+                                        format: '{point.name}'
+                                    }
+                                });
+                            });
+                        }
+
+                        this.setTitle(null, {text: e.point.name});
+                    },
+                    drillup: function () {
+                        drillup_update();
+                        this.setTitle(null, {text: ''});
+                    }
+                }
+            },
+
+            title: {
+                text: 'US Map - Energy Consumption Aggregated'
+            },
+
+            subtitle: {
+                text: ' ',
+                floating: true,
+                align: 'right',
+                y: 50,
+                style: {
+                    fontSize: '16px'
+                }
+            },
+
+            credits: {
+                enabled: false,
+                href: 'http://www.rtsperfectplant.com/',
+                position: {
+                    align: 'right',
+                    x: -10,
+                    verticalAlign: 'bottom',
+                    y: -5
+                },
+                style: {
+                    cursor: 'pointer',
+                    color: '#999999',
+                    fontSize: '9px'
+                },
+                text: 'RTS Consulting Inc.'
+            },
+            legend: small ? {} : {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle'
+            },
+
+            colorAxis: {
+                min: 0,
+                minColor: '#E6E7E8',
+                maxColor: '#005645'
+            },
+
+            mapNavigation: {
+                enabled: true,
+                buttonOptions: {
+                    verticalAlign: 'bottom'
+                }
+            },
+
+            plotOptions: {
+                map: {
+                    states: {
+                        hover: {
+                            color: '#EEDD66'
+                        }
+                    }
+                }
+            },
+
+            series: [{
+                data: data,
+                name: 'US',
+                dataLabels: {
+                    enabled: true,
+                    format: '{point.properties.postal-code}'
+                }
+            }],
+
+            drilldown: {
+                activeDataLabelStyle: {
+                    color: '#FFFFFF',
+                    textDecoration: 'none',
+                    textOutline: '1px #000000'
+                },
+                drillUpButton: {
+                    relativeTo: 'spacingBox',
+                    position: {
+                        x: 0,
+                        y: 60
+                    }
+                }
+            }
+        });
+    }
+
+    // ****************************************************************************************************************************************************
+    function drilldown_update(mapname) {
+        // alert(mapname);
+        // document.getElementById("jan_01_01").innerHTML = "45";
+        // document.getElementById("jan_01_02").innerHTML = "42";
+        // document.getElementById("feb_01_01").innerHTML = "50";
+        // document.getElementById("feb_01_02").innerHTML = "46";
+        // document.getElementById("mar_01_01").innerHTML = "61";
+        // document.getElementById("mar_01_02").innerHTML = "52";
+        // document.getElementById("apr_01_01").innerHTML = "62";
+        // document.getElementById("apr_01_02").innerHTML = "56";
+        // document.getElementById("may_01_01").innerHTML = "70";
+        // document.getElementById("may_01_02").innerHTML = "61";
+        // document.getElementById("jun_01_01").innerHTML = "75";
+        // document.getElementById("jun_01_02").innerHTML = "72";
+        // document.getElementById("jul_01_01").innerHTML = "70";
+        // document.getElementById("jul_01_02").innerHTML = "62";
+        // document.getElementById("aug_01_01").innerHTML = "64";
+        // document.getElementById("aug_01_02").innerHTML = "60";
+        // document.getElementById("sep_01_01").innerHTML = "57";
+        // document.getElementById("sep_01_02").innerHTML = "55";
+        // document.getElementById("oct_01_01").innerHTML = "52";
+        // document.getElementById("oct_01_02").innerHTML = "50";
+        // document.getElementById("nov_01_01").innerHTML = "49";
+        // document.getElementById("nov_01_02").innerHTML = "45";
+        // document.getElementById("dec_01_01").innerHTML = "45";
+        // document.getElementById("dec_01_02").innerHTML = "43";
+
+
+        var timestamp = new Date().getTime();
+
+        var url = "/XMII/Illuminator?QueryTemplate=NRGM/METERS/QUERIES/getMeterData&Param.1=" + mapname + "&ts=" + timestamp + "&Content-Type=text/xml";
+        cc(url);
+
+        getData(url, function (meterData) {
+            document.getElementById("tbody_kwh").innerHTML = cs(meterData[0]['chart1series1'].split(","), meterData[0]['chart1series2'].split(","));
+            document.getElementById("tbody_cuft").innerHTML = cs(meterData[0]['chart2series1'].split(","), meterData[0]['chart2series2'].split(","));
+            document.getElementById("tbody_gal").innerHTML = cs(meterData[0]['chart3series1'].split(","), meterData[0]['chart3series2'].split(","));
+
+            setChartOne();
+            setChartTwo();
+            setChartThree();
+
+            for (var N = 1; N <= 13; N++) {
+                document.getElementById("Top" + N).innerHTML = tops(N);
+            }
+
+            function tops(n) {
+                return '<b>' +
+                    meterData[0]['title' + n] + '</b><br><span style="font-family:Arial Black;font-size:32px;color: ' +
+                    meterData[0]['color' + n] + ';">' +
+                    meterData[0]['value' + n] + '</span><br> Monthly Events';
+            }
+
+            function cs(s1, s2) {
+                var mt = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                var cData = ''
+                for (var n = 0; n < 12; n++) {
+                    cData += "<tr><th>" + mt[n] + "</th><td>" + s1[n] + "</td><td>" + s2[n] + "</td></tr>";
+                }
+                return cData;
+            }
+        })
+    }
+
+    // ****************************************************************************************************************************************************
+    function drillup_update() {
+        // alert(" drillup ");
+        document.getElementById("jan_01_01").innerHTML = "50";
+        document.getElementById("jan_01_02").innerHTML = "47";
+        document.getElementById("feb_01_01").innerHTML = "55";
+        document.getElementById("feb_01_02").innerHTML = "51";
+        document.getElementById("mar_01_01").innerHTML = "66";
+        document.getElementById("mar_01_02").innerHTML = "57";
+        document.getElementById("apr_01_01").innerHTML = "67";
+        document.getElementById("apr_01_02").innerHTML = "61";
+        document.getElementById("may_01_01").innerHTML = "75";
+        document.getElementById("may_01_02").innerHTML = "66";
+        document.getElementById("jun_01_01").innerHTML = "80";
+        document.getElementById("jun_01_02").innerHTML = "77";
+        document.getElementById("jul_01_01").innerHTML = "75";
+        document.getElementById("jul_01_02").innerHTML = "67";
+        document.getElementById("aug_01_01").innerHTML = "69";
+        document.getElementById("aug_01_02").innerHTML = "65";
+        document.getElementById("sep_01_01").innerHTML = "63";
+        document.getElementById("sep_01_02").innerHTML = "60";
+        document.getElementById("oct_01_01").innerHTML = "57";
+        document.getElementById("oct_01_02").innerHTML = "55";
+        document.getElementById("nov_01_01").innerHTML = "54";
+        document.getElementById("nov_01_02").innerHTML = "50";
+        document.getElementById("dec_01_01").innerHTML = "50";
+        document.getElementById("dec_01_02").innerHTML = "48";
+        buildChartOne();
+        buildChartTwo();
+        buildChartThree();
+        document.getElementById("Top1").innerHTML = ' <b>Meter Data    </b> <br> <span style="font-family:Arial Black;font-size:32px;color: #007dc0;">90 </span><br> Monthly Events';
+        document.getElementById("Top2").innerHTML = ' <b>Maintenance   </b> <br> <span style="font-family:Arial Black;font-size:32px;color: green;"  >46 </span><br> Monthly Events';
+        document.getElementById("Top3").innerHTML = ' <b>Security      </b> <br> <span style="font-family:Arial Black;font-size:32px;color: red;"    >62 </span><br> Monthly Events';
+        document.getElementById("Top4").innerHTML = ' <b>Fire Events   </b> <br> <span style="font-family:Arial Black;font-size:32px;color: #007dc0;">36 </span><br> Monthly Events';
+        document.getElementById("Top5").innerHTML = ' <b>Occupancy     </b> <br> <span style="font-family:Arial Black;font-size:32px;color: #007dc0;">72 </span><br> Monthly Events';
+        document.getElementById("Top6").innerHTML = ' <b>Hot Water     </b> <br> <span style="font-family:Arial Black;font-size:32px;color: orange;" >444</span><br> Monthly Events';
+        document.getElementById("Top7").innerHTML = ' <b>Cold Water    </b> <br> <span style="font-family:Arial Black;font-size:32px;color: orange;" >317</span><br> Monthly Events';
+        document.getElementById("Top8").innerHTML = ' <b>Electricity   </b> <br> <span style="font-family:Arial Black;font-size:32px;color: green;"  >6  </span><br> Monthly Events';
+        document.getElementById("Top9").innerHTML = ' <b>Natural Gas   </b> <br> <span style="font-family:Arial Black;font-size:32px;color: green;"  >7  </span><br> Monthly Events';
+        document.getElementById("Top10").innerHTML = '<b>Water Chillers</b> <br> <span style="font-family:Arial Black;font-size:32px;color: red;"    >37 </span><br> Monthly Events';
+        document.getElementById("Top11").innerHTML = '<b>Water Boilers </b> <br> <span style="font-family:Arial Black;font-size:32px;color: green;"  >17 </span><br> Monthly Events';
+        document.getElementById("Top12").innerHTML = '<b>Equipment     </b> <br> <span style="font-family:Arial Black;font-size:32px;color: green;"  >3  </span><br> Monthly Events';
+        document.getElementById("Top13").innerHTML = '<b>Parking       </b> <br> <span style="font-family:Arial Black;font-size:32px;color: orange;" >212</span><br> Monthly Events';
+    }
+
+    // **********************
+    function cc(obj) {
+        console.log(obj);
+    }
+
+    var ISWS = false;
+
+    // **********************
+    </script>
+</head>
+<body onLoad="roleSecurity()">
+<input id="user_roles" type="hidden" value="{IllumLoginRoles}" style="display:block;width:800px;" readonly/>
+<input id="user_role" type="hidden" value="{ROLE}" style="display:block;width:800px;" readonly/>
+<input id="user_name" type="hidden" value="{IllumLoginName}" style="display: block;" readonly/>
+<input id="user_email" type="hidden" value="{email}" style="display:block;width:800px;" readonly/>
+<input id="user_firstname" type="hidden" value="{firstname}" style="display:block;width:800px;" readonly/>
+<input id="user_lastname" type="hidden" value="{lastname}" style="display:block;width:800px;" readonly/>
+<div id="app_header" class="no-print">
+    <div id="app_title">MAP AGGREGATES</div>
+    <div id="app_menu"></div>
+    <div id="page_title">DEFAULT SCREEN</div>
+</div>
+<div id="app_tabs" style="font-size:12px;">
+    <div class="inline" id="Top1"
+         style="margin:10px; margin-top:0px; background:#efefef;width:90px;height:80px;padding-top:15px; white-space: nowrap;">
+        <b>Meter
+            Data</b> <br><span style="font-family:Arial Black;font-size:32px;color: #007dc0;">90</span><br> Monthly
+        Events
+    </div>
+    <div class="inline" id="Top2"
+         style="margin:10px; margin-top:0px; background:#efefef;width:90px;height:80px;padding-top:15px; white-space: nowrap;">
+        <b>Maintenance</b> <br><span style="font-family:Arial Black;font-size:32px;color: green;">46</span><br> Monthly
+        Events
+    </div>
+    <div class="inline" id="Top3"
+         style="margin:10px; margin-top:0px; background:#efefef;width:90px;height:80px;padding-top:15px; white-space: nowrap;">
+        <b>
+            Security </b> <br><span style="font-family:Arial Black;font-size:32px;color: red;">62</span><br> Monthly
+        Events
+    </div>
+    <div class="inline" id="Top4"
+         style="margin:10px; margin-top:0px; background:#efefef;width:90px;height:80px;padding-top:15px; white-space: nowrap;">
+        <b> Fire
+            Events </b> <br><span style="font-family:Arial Black;font-size:32px;color: #007dc0;">36</span><br> Monthly
+        Events
+    </div>
+    <div class="inline" id="Top5"
+         style="margin:10px; margin-top:0px; background:#efefef;width:90px;height:80px;padding-top:15px; white-space: nowrap;">
+        <b>
+            Occupancy </b> <br><span style="font-family:Arial Black;font-size:32px;color: #007dc0;">72</span><br>
+        Monthly
+        Events
+    </div>
+    <div class="inline" id="Top6"
+         style="margin:10px; margin-top:0px; background:#efefef;width:90px;height:80px;padding-top:15px; white-space: nowrap;">
+        <b> Hot
+            Water </b> <br><span style="font-family:Arial Black;font-size:32px;color: orange;">444</span><br> Monthly
+        Events
+    </div>
+    <div class="inline" id="Top7"
+         style="margin:10px; margin-top:0px; background:#efefef;width:90px;height:80px;padding-top:15px; white-space: nowrap;">
+        <b> Cold
+            Water </b> <br><span style="font-family:Arial Black;font-size:32px;color: orange;">317</span><br> Monthly
+        Events
+    </div>
+    <div class="inline" id="Top8"
+         style="margin:10px; margin-top:0px; background:#efefef;width:90px;height:80px;padding-top:15px; white-space: nowrap;">
+        <b>
+            Electricity </b> <br><span style="font-family:Arial Black;font-size:32px;color: green;">6</span><br> Monthly
+        Events
+    </div>
+    <div class="inline" id="Top9"
+         style="margin:10px; margin-top:0px; background:#efefef;width:90px;height:80px;padding-top:15px;"><b> Natural
+        Gas </b> <br><span style="font-family:Arial Black;font-size:32px;color: green;">7</span><br> Monthly Events
+    </div>
+    <div class="inline" id="Top10"
+         style="margin:10px; margin-top:0px; background:#efefef;width:90px;height:80px;padding-top:15px; white-space: nowrap;">
+        <b> Water
+            Chillers </b> <br><span style="font-family:Arial Black;font-size:32px;color: red;">37</span><br> Monthly
+        Events
+    </div>
+    <div class="inline" id="Top11"
+         style="margin:10px; margin-top:0px; background:#efefef;width:90px;height:80px;padding-top:15px; white-space: nowrap;">
+        <b> Water
+            Boilers </b> <br><span style="font-family:Arial Black;font-size:32px;color: green;">17</span><br> Monthly
+        Events
+    </div>
+    <div class="inline" id="Top12"
+         style="margin:10px; margin-top:0px; background:#efefef;width:90px;height:80px;padding-top:15px; white-space: nowrap;">
+        <b>
+            Equipment </b> <br><span style="font-family:Arial Black;font-size:32px;color: green;">3</span><br> Monthly
+        Events
+    </div>
+    <div class="inline" id="Top13"
+         style="margin:10px; margin-top:0px; background:#efefef;width:90px;height:80px;padding-top:15px; white-space: nowrap;">
+        <b>
+            Parking </b> <br><span style="font-family:Arial Black;font-size:32px;color: orange;">212</span><br> Monthly
+        Events
+    </div>
+</div>
+<div id="nrg_content" style="width:1200px;margin:auto;margin-top:40px;" class="no-print"></div>
+<div id="nrg_title1"
+     style="width:100%;text-align: center;font-size:36px; color: #007dc0; margin-top; 20px; margin-bottom; 20px;font-weight:bold; display:none;"
+     class="do-print">REAL TIME ENERGY MAP AGGREGATES
+</div>
+<div id="container" class="inline" style="margin-left:50px; height: 750px; width: 1000px;"></div>
+<div id="chart_one" class="inline"
+     style="width:800px; height:250px;background:#fff;border-top:1px solid #efefef;"></div>
+<div id="chart_two" class="inline" style="width:800px; height:250px;background:#efefef;"></div>
+<div id="chart_three" class="inline"
+     style="width:800px; height:250px;background:#fff;border-bottom:1px solid #efefef"></div>
+<div id="nrg_map" style="width:1px; height:1px; margin:0 auto;background:#fff;text-align:center;"></div>
+<div id="nrg_report" style="width:1200px;margin:0 auto;background:#fff;margin-top; 40px;"> &nbsp;</div>
+<div style="display:none;">
+    <table id="datatable_kwh">
+        <thead>
+        <tr>
+            <th></th>
+            <th>2016</th>
+            <th>2017</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th>Jan</th>
+            <td id="jan_01_01">50</td>
+            <td id="jan_01_02">47</td>
+        </tr>
+        <tr>
+            <th>Feb</th>
+            <td id="feb_01_01">55</td>
+            <td id="feb_01_02">51</td>
+        </tr>
+        <tr>
+            <th>Mar</th>
+            <td id="mar_01_01">60</td>
+            <td id="mar_01_02">57</td>
+        </tr>
+        <tr>
+            <th>Apr</th>
+            <td id="apr_01_01">67</td>
+            <td id="apr_01_02">61</td>
+        </tr>
+        <tr>
+            <th>May</th>
+            <td id="may_01_01">75</td>
+            <td id="may_01_02">66</td>
+        </tr>
+        <tr>
+            <th>Jun</th>
+            <td id="jun_01_01">80</td>
+            <td id="jun_01_02">77</td>
+        </tr>
+        <tr>
+            <th>Jul</th>
+            <td id="jul_01_01">75</td>
+            <td id="jul_01_02">67</td>
+        </tr>
+        <tr>
+            <th>Aug</th>
+            <td id="aug_01_01">69</td>
+            <td id="aug_01_02">65</td>
+        </tr>
+        <tr>
+            <th>Sep</th>
+            <td id="sep_01_01">63</td>
+            <td id="sep_01_02">60</td>
+        </tr>
+        <tr>
+            <th>Oct</th>
+            <td id="oct_01_01">57</td>
+            <td id="oct_01_02">55</td>
+        </tr>
+        <tr>
+            <th>Nov</th>
+            <td id="nov_01_01">54</td>
+            <td id="nov_01_02">50</td>
+        </tr>
+        <tr>
+            <th>Dec</th>
+            <td id="dec_01_01">50</td>
+            <td id="dec_01_02">48</td>
+        </tr>
+        </tbody>
+    </table>
+    <table id="datatable_cuft">
+        <thead>
+        <tr>
+            <th></th>
+            <th>2016</th>
+            <th>2017</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th>Jan</th>
+            <td id="jan_02_01">80</td>
+            <td id="jan_02_02">77</td>
+        </tr>
+        <tr>
+            <th>Feb</th>
+            <td id="feb_02_01">75</td>
+            <td id="feb_02_02">72</td>
+        </tr>
+        <tr>
+            <th>Mar</th>
+            <td id="mar_02_01">70</td>
+            <td id="mar_02_02">69</td>
+        </tr>
+        <tr>
+            <th>Apr</th>
+            <td id="apr_02_01">65</td>
+            <td id="apr_02_02">63</td>
+        </tr>
+        <tr>
+            <th>May</th>
+            <td id="may_02_01">60</td>
+            <td id="may_02_02">58</td>
+        </tr>
+        <tr>
+            <th>Jun</th>
+            <td id="jun_02_01">55</td>
+            <td id="jun_02_02">52</td>
+        </tr>
+        <tr>
+            <th>Jul</th>
+            <td id="jul_02_01">59</td>
+            <td id="jul_02_02">57</td>
+        </tr>
+        <tr>
+            <th>Aug</th>
+            <td id="aug_02_01">67</td>
+            <td id="aug_02_02">64</td>
+        </tr>
+        <tr>
+            <th>Sep</th>
+            <td id="sep_02_01">71</td>
+            <td id="sep_02_02">68</td>
+        </tr>
+        <tr>
+            <th>Oct</th>
+            <td id="oct_02_01">75</td>
+            <td id="oct_02_02">72</td>
+        </tr>
+        <tr>
+            <th>Nov</th>
+            <td id="nov_02_01">78</td>
+            <td id="nov_02_02">72</td>
+        </tr>
+        <tr>
+            <th>Dec</th>
+            <td id="dec_02_01">81</td>
+            <td id="dec_02_02">77</td>
+        </tr>
+        </tbody>
+    </table>
+    <table id="datatable_gal">
+        <thead>
+        <tr>
+            <th></th>
+            <th>2016</th>
+            <th>2017</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th>Jan</th>
+            <td id="jan_03_01">79</td>
+            <td id="jan_03_02">77</td>
+        </tr>
+        <tr>
+            <th>Feb</th>
+            <td id="feb_03_01">72</td>
+            <td id="feb_03_02">70</td>
+        </tr>
+        <tr>
+            <th>Mar</th>
+            <td id="mar_03_01">68</td>
+            <td id="mar_03_02">66</td>
+        </tr>
+        <tr>
+            <th>Apr</th>
+            <td id="apr_03_01">63</td>
+            <td id="apr_03_02">61</td>
+        </tr>
+        <tr>
+            <th>May</th>
+            <td id="may_03_01">59</td>
+            <td id="may_03_02">57</td>
+        </tr>
+        <tr>
+            <th>Jun</th>
+            <td id="jun_03_01">55</td>
+            <td id="jun_03_02">53</td>
+        </tr>
+        <tr>
+            <th>Jul</th>
+            <td id="jul_03_01">50</td>
+            <td id="jul_03_02">48</td>
+        </tr>
+        <tr>
+            <th>Aug</th>
+            <td id="aug_03_01">48</td>
+            <td id="aug_03_02">46</td>
+        </tr>
+        <tr>
+            <th>Sep</th>
+            <td id="sep_03_01">46</td>
+            <td id="sep_03_02">44</td>
+        </tr>
+        <tr>
+            <th>Oct</th>
+            <td id="oct_03_01">44</td>
+            <td id="oct_03_02">42</td>
+        </tr>
+        <tr>
+            <th>Nov</th>
+            <td id="nov_03_01">42</td>
+            <td id="nov_03_02">40</td>
+        </tr>
+        <tr>
+            <th>Dec</th>
+            <td id="dec_03_01">40</td>
+            <td id="dec_03_02">39</td>
+        </tr>
+        </tbody>
+    </table>
+    <table id="datatable_kwh2">
+        <thead>
+        <tr>
+            <th></th>
+            <th>2016</th>
+            <th>2017</th>
+        </tr>
+        </thead>
+        <tbody id="tbody_kwh">
+        </tbody>
+    </table>
+    <table id="datatable_cuft2">
+        <thead>
+        <tr>
+            <th></th>
+            <th>2016</th>
+            <th>2017</th>
+        </tr>
+        </thead>
+        <tbody id="tbody_cuft">
+        </tbody>
+    </table>
+    <table id="datatable_gal2">
+        <thead>
+        <tr>
+            <th></th>
+            <th>2016</th>
+            <th>2017</th>
+        </tr>
+        </thead>
+        <tbody id="tbody_gal">
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
